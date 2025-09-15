@@ -11,9 +11,11 @@ import {
   Brain,
   TrendingUp,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Activity
 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell } from "recharts";
 
 const StudentDashboard = () => {
   const sidebarItems = [
@@ -36,6 +38,30 @@ const StudentDashboard = () => {
     ghq: { score: 12, level: "Moderate", color: "bg-primary" },
   };
 
+  const wellnessTrend = [
+    { week: "Week 1", phq9: 12, gad7: 9, ghq: 15 },
+    { week: "Week 2", phq9: 10, gad7: 8, ghq: 14 },
+    { week: "Week 3", phq9: 9, gad7: 7, ghq: 13 },
+    { week: "Week 4", phq9: 8, gad7: 6, ghq: 12 },
+  ];
+
+  const activityData = [
+    { name: "Sessions", value: 12, color: "#8B9FE8" },
+    { name: "Resources", value: 18, color: "#A8C5A5" },
+    { name: "Peer Support", value: 8, color: "#DFA8D8" },
+    { name: "Self-Care", value: 15, color: "#F0C987" },
+  ];
+
+  const moodData = [
+    { day: "Mon", mood: 7 },
+    { day: "Tue", mood: 6 },
+    { day: "Wed", mood: 8 },
+    { day: "Thu", mood: 7 },
+    { day: "Fri", mood: 9 },
+    { day: "Sat", mood: 8 },
+    { day: "Sun", mood: 8 },
+  ];
+
   return (
     <DashboardLayout sidebarItems={sidebarItems} userType="student" userName="Alex Johnson">
       <div className="space-y-8">
@@ -49,7 +75,7 @@ const StudentDashboard = () => {
 
         {/* Wellness Scores */}
         <div className="grid md:grid-cols-3 gap-6">
-          <Card className="bg-gradient-to-br from-primary-soft to-primary-soft/50">
+          <Card className="bg-gradient-to-br from-primary-soft to-primary-soft/30 border-primary/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">PHQ-9 Score</CardTitle>
               <Brain className="h-4 w-4 text-primary" />
@@ -61,7 +87,7 @@ const StudentDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-success-soft to-success-soft/50">
+          <Card className="bg-gradient-to-br from-success-soft to-success-soft/30 border-success/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">GAD-7 Score</CardTitle>
               <Heart className="h-4 w-4 text-success" />
@@ -73,7 +99,7 @@ const StudentDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-accent-soft to-accent-soft/50">
+          <Card className="bg-gradient-to-br from-accent-soft to-accent-soft/30 border-accent/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">GHQ Score</CardTitle>
               <TrendingUp className="h-4 w-4 text-accent" />
@@ -86,11 +112,124 @@ const StudentDashboard = () => {
           </Card>
         </div>
 
+        {/* Wellness Trends & Activity Charts */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          <Card className="bg-gradient-to-br from-card to-muted/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Wellness Progress
+              </CardTitle>
+              <CardDescription>
+                Your mental health scores over the past month
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={wellnessTrend}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: "hsl(var(--card))", 
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px"
+                    }} 
+                  />
+                  <Line type="monotone" dataKey="phq9" stroke="#F0C987" strokeWidth={2} dot={{ fill: "#F0C987", r: 4 }} />
+                  <Line type="monotone" dataKey="gad7" stroke="#A8C5A5" strokeWidth={2} dot={{ fill: "#A8C5A5", r: 4 }} />
+                  <Line type="monotone" dataKey="ghq" stroke="#8B9FE8" strokeWidth={2} dot={{ fill: "#8B9FE8", r: 4 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-card to-muted/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Activity Distribution
+              </CardTitle>
+              <CardDescription>
+                Your engagement across different support services
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-center">
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={activityData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {activityData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: "hsl(var(--card))", 
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px"
+                      }} 
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mt-4">
+                {activityData.map((item, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className="text-sm text-muted-foreground">{item.name}</span>
+                    <span className="text-sm font-medium">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Daily Mood Tracker */}
+        <Card className="bg-gradient-to-br from-card to-muted/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Heart className="h-5 w-5" />
+              Daily Mood Tracker
+            </CardTitle>
+            <CardDescription>
+              Your mood patterns throughout the week
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={moodData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
+                <YAxis stroke="hsl(var(--muted-foreground))" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: "hsl(var(--card))", 
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px"
+                  }} 
+                />
+                <Area type="monotone" dataKey="mood" stroke="#DFA8D8" fill="#DFA8D8" fillOpacity={0.3} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-primary-soft/50 to-primary-soft/20 border-primary/10">
             <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-primary-soft rounded-lg flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-primary-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
                 <MessageCircle className="h-6 w-6 text-primary" />
               </div>
               <div>
@@ -100,9 +239,9 @@ const StudentDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-success-soft/50 to-success-soft/20 border-success/10">
             <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-success-soft rounded-lg flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-success-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
                 <Calendar className="h-6 w-6 text-success" />
               </div>
               <div>
@@ -112,9 +251,9 @@ const StudentDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-accent-soft/50 to-accent-soft/20 border-accent/10">
             <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-accent-soft rounded-lg flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-accent-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
                 <Users className="h-6 w-6 text-accent" />
               </div>
               <div>
@@ -124,9 +263,9 @@ const StudentDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-warning-soft/50 to-warning-soft/20 border-warning/10">
             <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-warning-soft rounded-lg flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-warning-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
                 <BookOpen className="h-6 w-6 text-warning" />
               </div>
               <div>

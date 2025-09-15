@@ -8,65 +8,66 @@ All colors MUST be HSL. Designed for mental health and wellbeing.
 
 @layer base {
   :root {
-    /* Base colors - Clean whites and soft grays */
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    /* Base colors - Ultra soft and calming */
+    --background: 220 30% 98%;
+    --foreground: 215 20% 25%;
 
-    /* Card system - Elevated surfaces */
+    /* Card system - Gentle elevated surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 215 20% 25%;
 
     /* Popover system */
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 215 20% 25%;
 
-    /* Primary - Calming blue for trust and professionalism */
-    --primary: 213 94% 68%;
+    /* Primary - Soft lavender blue for serenity */
+    --primary: 220 35% 75%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 213 94% 60%;
-    --primary-soft: 213 94% 95%;
+    --primary-hover: 220 35% 68%;
+    --primary-soft: 220 35% 96%;
 
-    /* Secondary - Warm sage green for healing */
-    --secondary: 158 25% 85%;
-    --secondary-foreground: 158 30% 25%;
-    --secondary-hover: 158 25% 80%;
+    /* Secondary - Gentle sage for peace */
+    --secondary: 150 20% 88%;
+    --secondary-foreground: 150 25% 30%;
+    --secondary-hover: 150 20% 85%;
 
-    /* Muted system - Subtle backgrounds */
-    --muted: 210 20% 95%;
-    --muted-foreground: 215 15% 45%;
+    /* Muted system - Whisper-soft backgrounds */
+    --muted: 220 20% 96%;
+    --muted-foreground: 215 12% 55%;
 
-    /* Accent - Gentle purple for highlights */
-    --accent: 248 53% 58%;
+    /* Accent - Soft pink-purple for warmth */
+    --accent: 300 25% 75%;
     --accent-foreground: 0 0% 100%;
-    --accent-soft: 248 53% 95%;
+    --accent-soft: 300 25% 96%;
 
-    /* Success - Healing green */
-    --success: 158 64% 52%;
+    /* Success - Gentle mint green */
+    --success: 160 35% 65%;
     --success-foreground: 0 0% 100%;
-    --success-soft: 158 64% 95%;
+    --success-soft: 160 35% 96%;
 
-    /* Warning - Gentle orange */
-    --warning: 35 91% 62%;
+    /* Warning - Soft peach for gentle alerts */
+    --warning: 35 45% 70%;
     --warning-foreground: 0 0% 100%;
-    --warning-soft: 35 91% 95%;
+    --warning-soft: 35 45% 96%;
 
-    /* Destructive - Soft red for errors */
-    --destructive: 0 65% 65%;
+    /* Destructive - Gentle coral for minimal stress */
+    --destructive: 0 35% 70%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Border and input system */
-    --border: 214 20% 88%;
-    --input: 214 20% 92%;
-    --ring: 213 94% 68%;
+    /* Border and input system - Ultra subtle */
+    --border: 220 15% 90%;
+    --input: 220 15% 94%;
+    --ring: 220 35% 75%;
 
-    /* Gradients - Professional and calming */
+    /* Gradients - Dreamy and soothing */
     --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
+    --gradient-gentle: linear-gradient(120deg, hsl(220 35% 96%), hsl(300 25% 96%));
 
-    /* Shadows - Elegant depth */
-    --shadow-soft: 0 4px 20px -4px hsl(var(--primary) / 0.1);
-    --shadow-medium: 0 8px 30px -6px hsl(var(--primary) / 0.15);
-    --shadow-strong: 0 20px 40px -10px hsl(var(--primary) / 0.2);
+    /* Shadows - Whisper-soft depth */
+    --shadow-soft: 0 2px 12px -2px hsl(var(--primary) / 0.06);
+    --shadow-medium: 0 4px 20px -4px hsl(var(--primary) / 0.08);
+    --shadow-strong: 0 8px 30px -6px hsl(var(--primary) / 0.12);
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -84,52 +85,53 @@ All colors MUST be HSL. Designed for mental health and wellbeing.
   }
 
   .dark {
-    --background: 215 28% 8%;
-    --foreground: 210 40% 95%;
+    --background: 220 25% 12%;
+    --foreground: 220 20% 92%;
 
-    --card: 215 28% 10%;
-    --card-foreground: 210 40% 95%;
+    --card: 220 25% 14%;
+    --card-foreground: 220 20% 92%;
 
-    --popover: 215 28% 10%;
-    --popover-foreground: 210 40% 95%;
+    --popover: 220 25% 14%;
+    --popover-foreground: 220 20% 92%;
 
-    --primary: 213 94% 68%;
-    --primary-foreground: 215 28% 8%;
-    --primary-hover: 213 94% 60%;
-    --primary-soft: 213 94% 15%;
+    --primary: 220 35% 65%;
+    --primary-foreground: 220 25% 12%;
+    --primary-hover: 220 35% 60%;
+    --primary-soft: 220 35% 18%;
 
-    --secondary: 215 28% 15%;
-    --secondary-foreground: 210 40% 95%;
-    --secondary-hover: 215 28% 20%;
+    --secondary: 150 20% 20%;
+    --secondary-foreground: 220 20% 92%;
+    --secondary-hover: 150 20% 25%;
 
-    --muted: 215 28% 12%;
-    --muted-foreground: 215 15% 65%;
+    --muted: 220 25% 16%;
+    --muted-foreground: 220 15% 65%;
 
-    --accent: 248 53% 58%;
-    --accent-foreground: 210 40% 95%;
-    --accent-soft: 248 53% 15%;
+    --accent: 300 25% 65%;
+    --accent-foreground: 220 20% 92%;
+    --accent-soft: 300 25% 18%;
 
-    --success: 158 64% 52%;
-    --success-foreground: 210 40% 95%;
-    --success-soft: 158 64% 15%;
+    --success: 160 35% 55%;
+    --success-foreground: 220 20% 92%;
+    --success-soft: 160 35% 18%;
 
-    --warning: 35 91% 62%;
-    --warning-foreground: 215 28% 8%;
-    --warning-soft: 35 91% 15%;
+    --warning: 35 45% 60%;
+    --warning-foreground: 220 25% 12%;
+    --warning-soft: 35 45% 18%;
 
-    --destructive: 0 65% 65%;
-    --destructive-foreground: 210 40% 95%;
+    --destructive: 0 35% 60%;
+    --destructive-foreground: 220 20% 92%;
 
-    --border: 215 28% 18%;
-    --input: 215 28% 18%;
-    --ring: 213 94% 68%;
+    --border: 220 25% 20%;
+    --input: 220 25% 20%;
+    --ring: 220 35% 65%;
 
     --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
     --gradient-card: linear-gradient(180deg, hsl(var(--card)), hsl(var(--muted)));
+    --gradient-gentle: linear-gradient(120deg, hsl(220 25% 16%), hsl(300 25% 18%));
 
-    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
-    --shadow-medium: 0 8px 30px -6px hsl(0 0% 0% / 0.4);
-    --shadow-strong: 0 20px 40px -10px hsl(0 0% 0% / 0.5);
+    --shadow-soft: 0 2px 12px -2px hsl(0 0% 0% / 0.2);
+    --shadow-medium: 0 4px 20px -4px hsl(0 0% 0% / 0.25);
+    --shadow-strong: 0 8px 30px -6px hsl(0 0% 0% / 0.3);
 
     --sidebar-background: 215 28% 10%;
     --sidebar-foreground: 210 40% 95%;

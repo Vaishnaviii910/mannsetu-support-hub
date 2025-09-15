@@ -20,6 +20,7 @@ import {
   Activity
 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
 
 const Analytics = () => {
   const sidebarItems = [
@@ -241,19 +242,85 @@ const Analytics = () => {
           </TabsContent>
 
           <TabsContent value="wellness" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Wellness Score Trends</CardTitle>
-                <CardDescription>
-                  Track changes in student mental wellness over time
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  Detailed wellness analytics charts would be implemented here
-                </div>
-              </CardContent>
-            </Card>
+            <div className="grid lg:grid-cols-2 gap-6">
+              <Card className="bg-gradient-to-br from-card to-muted/30">
+                <CardHeader>
+                  <CardTitle>Wellness Score Trends</CardTitle>
+                  <CardDescription>
+                    Average mental health scores over the past 6 months
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart data={monthlyTrends}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                      <YAxis stroke="hsl(var(--muted-foreground))" />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: "hsl(var(--card))", 
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "8px"
+                        }} 
+                      />
+                      <Area type="monotone" dataKey="satisfaction" stroke="#A8C5A5" fill="#A8C5A5" fillOpacity={0.3} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-card to-muted/30">
+                <CardHeader>
+                  <CardTitle>Risk Level Distribution</CardTitle>
+                  <CardDescription>
+                    Current student risk assessment breakdown
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={riskDistribution}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={5}
+                        dataKey="percentage"
+                      >
+                        {riskDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={
+                            entry.level === "Low Risk" ? "#A8C5A5" :
+                            entry.level === "Moderate Risk" ? "#F0C987" : "#DFA8D8"
+                          } />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: "hsl(var(--card))", 
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "8px"
+                        }} 
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="grid grid-cols-1 gap-2 mt-4">
+                    {riskDistribution.map((item, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${
+                            item.level === "Low Risk" ? "bg-success" :
+                            item.level === "Moderate Risk" ? "bg-warning" : "bg-destructive"
+                          }`} />
+                          <span className="text-sm">{item.level}</span>
+                        </div>
+                        <span className="text-sm font-medium">{item.count} students</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="interventions" className="space-y-6">
@@ -334,17 +401,30 @@ const Analytics = () => {
           </TabsContent>
 
           <TabsContent value="outcomes" className="space-y-6">
-            <Card>
+            <Card className="bg-gradient-to-br from-card to-muted/30">
               <CardHeader>
-                <CardTitle>Treatment Outcomes</CardTitle>
+                <CardTitle>Treatment Outcomes & Success Metrics</CardTitle>
                 <CardDescription>
                   Long-term outcomes and success metrics for mental health interventions
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  Comprehensive outcome analytics would be implemented here
-                </div>
+                <ResponsiveContainer width="100%" height={350}>
+                  <BarChart data={monthlyTrends}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: "hsl(var(--card))", 
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px"
+                      }} 
+                    />
+                    <Bar dataKey="sessions" fill="#8B9FE8" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="students" fill="#A8C5A5" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </TabsContent>

@@ -9,9 +9,11 @@ import {
   CheckCircle,
   AlertCircle,
   TrendingUp,
-  MessageCircle
+  MessageCircle,
+  Activity
 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 
 const CounselorDashboard = () => {
   const sidebarItems = [
@@ -41,6 +43,27 @@ const CounselorDashboard = () => {
     { title: "Avg. Session", value: "45min", change: "Standard duration", icon: Clock },
   ];
 
+  const sessionTrends = [
+    { month: "Jan", sessions: 45, outcomes: 42 },
+    { month: "Feb", sessions: 52, outcomes: 48 },
+    { month: "Mar", sessions: 48, outcomes: 46 },
+    { month: "Apr", sessions: 58, outcomes: 55 },
+    { month: "May", sessions: 62, outcomes: 58 },
+  ];
+
+  const studentProgress = [
+    { name: "Improved", value: 68, color: "#A8C5A5" },
+    { name: "Stable", value: 25, color: "#8B9FE8" },
+    { name: "Needs Attention", value: 7, color: "#F0C987" },
+  ];
+
+  const sessionTypes = [
+    { type: "Individual", count: 18 },
+    { type: "Crisis", count: 3 },
+    { type: "Follow-up", count: 12 },
+    { type: "Assessment", count: 8 },
+  ];
+
   return (
     <DashboardLayout sidebarItems={sidebarItems} userType="counselor" userName="Dr. Sarah Wilson">
       <div className="space-y-8">
@@ -55,10 +78,10 @@ const CounselorDashboard = () => {
         {/* Stats Overview */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
-            <Card key={index}>
+            <Card key={index} className="bg-gradient-to-br from-card to-muted/30 border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <stat.icon className="h-4 w-4 text-muted-foreground" />
+                <stat.icon className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stat.value}</div>
@@ -67,6 +90,120 @@ const CounselorDashboard = () => {
             </Card>
           ))}
         </div>
+
+        {/* Session Analytics */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          <Card className="bg-gradient-to-br from-card to-muted/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Session Trends & Outcomes
+              </CardTitle>
+              <CardDescription>
+                Monthly session volume and positive outcomes
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={sessionTrends}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: "hsl(var(--card))", 
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px"
+                    }} 
+                  />
+                  <Bar dataKey="sessions" fill="#8B9FE8" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="outcomes" fill="#A8C5A5" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-card to-muted/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Student Progress Overview
+              </CardTitle>
+              <CardDescription>
+                Current status distribution of your students
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-center">
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={studentProgress}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {studentProgress.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: "hsl(var(--card))", 
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px"
+                      }} 
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="grid grid-cols-1 gap-2 mt-4">
+                {studentProgress.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                      <span className="text-sm text-muted-foreground">{item.name}</span>
+                    </div>
+                    <span className="text-sm font-medium">{item.value}%</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Session Types Distribution */}
+        <Card className="bg-gradient-to-br from-card to-muted/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Session Types This Week
+            </CardTitle>
+            <CardDescription>
+              Breakdown of different counseling session types
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={sessionTypes} layout="horizontal">
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis type="number" stroke="hsl(var(--muted-foreground))" />
+                <YAxis type="category" dataKey="type" stroke="hsl(var(--muted-foreground))" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: "hsl(var(--card))", 
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px"
+                  }} 
+                />
+                <Bar dataKey="count" fill="#DFA8D8" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Today's Schedule */}
@@ -151,9 +288,9 @@ const CounselorDashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-3 gap-6">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-primary-soft/50 to-primary-soft/20 border-primary/10">
             <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-primary-soft rounded-lg flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-primary-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
                 <FileText className="h-6 w-6 text-primary" />
               </div>
               <div>
@@ -164,9 +301,9 @@ const CounselorDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-success-soft/50 to-success-soft/20 border-success/10">
             <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-success-soft rounded-lg flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-success-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
                 <Users className="h-6 w-6 text-success" />
               </div>
               <div>
@@ -177,9 +314,9 @@ const CounselorDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-accent-soft/50 to-accent-soft/20 border-accent/10">
             <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-accent-soft rounded-lg flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-accent-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
                 <TrendingUp className="h-6 w-6 text-accent" />
               </div>
               <div>

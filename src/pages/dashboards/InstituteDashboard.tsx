@@ -11,9 +11,11 @@ import {
   BarChart3,
   Shield,
   Settings,
-  Plus
+  Plus,
+  Activity
 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from "recharts";
 
 const InstituteDashboard = () => {
   const sidebarItems = [
@@ -75,6 +77,22 @@ const InstituteDashboard = () => {
     { name: "Dr. James Rodriguez", students: 26, sessions: 20, availability: 80 },
   ];
 
+  const instituteTrends = [
+    { month: "Jan", students: 2456, sessions: 342, utilization: 45 },
+    { month: "Feb", students: 2532, sessions: 398, utilization: 52 },
+    { month: "Mar", students: 2678, sessions: 445, utilization: 58 },
+    { month: "Apr", students: 2743, sessions: 521, utilization: 62 },
+    { month: "May", students: 2847, sessions: 587, utilization: 68 },
+  ];
+
+  const departmentData = [
+    { department: "Engineering", count: 534, utilization: 23 },
+    { department: "Medical", count: 423, utilization: 31 },
+    { department: "Liberal Arts", count: 298, utilization: 18 },
+    { department: "Business", count: 267, utilization: 16 },
+    { department: "Sciences", count: 345, utilization: 21 },
+  ];
+
   return (
     <DashboardLayout sidebarItems={sidebarItems} userType="institute" userName="IIT Delhi">
       <div className="space-y-8">
@@ -95,7 +113,7 @@ const InstituteDashboard = () => {
         {/* Overview Statistics */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {overviewStats.map((stat, index) => (
-            <Card key={index}>
+            <Card key={index} className="bg-gradient-to-br from-card to-muted/30 border-border/50">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
                 <stat.icon className={`h-4 w-4 ${stat.color}`} />
@@ -107,6 +125,67 @@ const InstituteDashboard = () => {
             </Card>
           ))}
         </div>
+
+        {/* Institute Growth Trends */}
+        <Card className="bg-gradient-to-br from-card to-muted/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Institute Growth & Utilization Trends
+            </CardTitle>
+            <CardDescription>
+              Student enrollment, session volume, and support utilization over time
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={instituteTrends}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                <YAxis stroke="hsl(var(--muted-foreground))" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: "hsl(var(--card))", 
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px"
+                  }} 
+                />
+                <Area type="monotone" dataKey="sessions" stackId="1" stroke="#8B9FE8" fill="#8B9FE8" fillOpacity={0.3} />
+                <Area type="monotone" dataKey="utilization" stackId="2" stroke="#A8C5A5" fill="#A8C5A5" fillOpacity={0.3} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Department Analytics */}
+        <Card className="bg-gradient-to-br from-card to-muted/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Department-wise Support Utilization
+            </CardTitle>
+            <CardDescription>
+              Mental health support usage across different academic departments
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={departmentData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="department" stroke="hsl(var(--muted-foreground))" />
+                <YAxis stroke="hsl(var(--muted-foreground))" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: "hsl(var(--card))", 
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px"
+                  }} 
+                />
+                <Bar dataKey="utilization" fill="#DFA8D8" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Mental Health Metrics */}
@@ -242,9 +321,9 @@ const InstituteDashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-3 gap-6">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-primary-soft/50 to-primary-soft/20 border-primary/10">
             <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-primary-soft rounded-lg flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-primary-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
                 <Plus className="h-6 w-6 text-primary" />
               </div>
               <div>
@@ -255,9 +334,9 @@ const InstituteDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-success-soft/50 to-success-soft/20 border-success/10">
             <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-success-soft rounded-lg flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-success-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
                 <BarChart3 className="h-6 w-6 text-success" />
               </div>
               <div>
@@ -268,9 +347,9 @@ const InstituteDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-accent-soft/50 to-accent-soft/20 border-accent/10">
             <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-accent-soft rounded-lg flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-accent-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
                 <Settings className="h-6 w-6 text-accent" />
               </div>
               <div>
