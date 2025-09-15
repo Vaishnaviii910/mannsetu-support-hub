@@ -157,36 +157,6 @@ const InstituteDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Department Analytics */}
-        <Card className="bg-gradient-to-br from-card to-muted/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Department-wise Support Utilization
-            </CardTitle>
-            <CardDescription>
-              Mental health support usage across different academic departments
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={departmentData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="department" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: "hsl(var(--card))", 
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px"
-                  }} 
-                />
-                <Bar dataKey="utilization" fill="#DFA8D8" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Mental Health Metrics */}
           <Card className="lg:col-span-2">
@@ -270,93 +240,6 @@ const InstituteDashboard = () => {
               <Button variant="outline" className="w-full mt-4">
                 View All Alerts
               </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Counselor Workload */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserCheck className="h-5 w-5" />
-              Counselor Workload Overview
-            </CardTitle>
-            <CardDescription>
-              Current workload and availability of your counseling team
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {counselorWorkload.map((counselor, index) => (
-                <div key={index} className="flex items-center justify-between p-4 rounded-lg border">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-primary-soft rounded-full flex items-center justify-center">
-                      <UserCheck className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium">{counselor.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {counselor.students} students • {counselor.sessions} sessions this month
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right space-y-1">
-                    <Badge variant={counselor.availability > 85 ? "default" : counselor.availability > 70 ? "secondary" : "destructive"}>
-                      {counselor.availability}% Available
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-4 mt-6">
-              <Button variant="outline" className="flex-1">
-                Manage Counselors
-              </Button>
-              <Button className="flex-1">
-                View Detailed Analytics
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6">
-          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-primary-soft/50 to-primary-soft/20 border-primary/10">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-primary-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
-                <Plus className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Register Counselor</h3>
-                <p className="text-sm text-muted-foreground">Add new mental health professionals</p>
-              </div>
-              <Button variant="outline" className="w-full">Add Counselor</Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-success-soft/50 to-success-soft/20 border-success/10">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-success-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
-                <BarChart3 className="h-6 w-6 text-success" />
-              </div>
-              <div>
-                <h3 className="font-semibold">View Analytics</h3>
-                <p className="text-sm text-muted-foreground">Detailed mental health insights</p>
-              </div>
-              <Button variant="outline" className="w-full">View Reports</Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-accent-soft/50 to-accent-soft/20 border-accent/10">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-accent-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
-                <Settings className="h-6 w-6 text-accent" />
-              </div>
-              <div>
-                <h3 className="font-semibold">System Settings</h3>
-                <p className="text-sm text-muted-foreground">Configure platform preferences</p>
-              </div>
-              <Button variant="outline" className="w-full">Configure</Button>
             </CardContent>
           </Card>
         </div>

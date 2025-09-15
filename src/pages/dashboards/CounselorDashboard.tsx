@@ -20,7 +20,6 @@ const CounselorDashboard = () => {
     { title: "Dashboard", url: "/counselor-dashboard", icon: Calendar, isActive: true },
     { title: "Bookings", url: "/counselor/bookings", icon: Clock },
     { title: "Session Records", url: "/counselor/records", icon: FileText },
-    { title: "Students", url: "/counselor/students", icon: Users },
   ];
 
   const todaysSchedule = [
@@ -89,90 +88,6 @@ const CounselorDashboard = () => {
               </CardContent>
             </Card>
           ))}
-        </div>
-
-        {/* Session Analytics */}
-        <div className="grid lg:grid-cols-2 gap-8">
-          <Card className="bg-gradient-to-br from-card to-muted/30">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Session Trends & Outcomes
-              </CardTitle>
-              <CardDescription>
-                Monthly session volume and positive outcomes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={sessionTrends}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: "hsl(var(--card))", 
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px"
-                    }} 
-                  />
-                  <Bar dataKey="sessions" fill="#8B9FE8" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="outcomes" fill="#A8C5A5" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-card to-muted/30">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Student Progress Overview
-              </CardTitle>
-              <CardDescription>
-                Current status distribution of your students
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-center">
-                <ResponsiveContainer width="100%" height={200}>
-                  <PieChart>
-                    <Pie
-                      data={studentProgress}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {studentProgress.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: "hsl(var(--card))", 
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px"
-                      }} 
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="grid grid-cols-1 gap-2 mt-4">
-                {studentProgress.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                      <span className="text-sm text-muted-foreground">{item.name}</span>
-                    </div>
-                    <span className="text-sm font-medium">{item.value}%</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Session Types Distribution */}
@@ -286,47 +201,6 @@ const CounselorDashboard = () => {
           </Card>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6">
-          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-primary-soft/50 to-primary-soft/20 border-primary/10">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-primary-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
-                <FileText className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Session Notes</h3>
-                <p className="text-sm text-muted-foreground">Review and update session records</p>
-              </div>
-              <Button variant="outline" className="w-full">Access Records</Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-success-soft/50 to-success-soft/20 border-success/10">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-success-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
-                <Users className="h-6 w-6 text-success" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Student Management</h3>
-                <p className="text-sm text-muted-foreground">View assigned students and their progress</p>
-              </div>
-              <Button variant="outline" className="w-full">Manage Students</Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-accent-soft/50 to-accent-soft/20 border-accent/10">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-accent-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
-                <TrendingUp className="h-6 w-6 text-accent" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Analytics</h3>
-                <p className="text-sm text-muted-foreground">View your counseling effectiveness metrics</p>
-              </div>
-              <Button variant="outline" className="w-full">View Insights</Button>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Priority Alerts */}
         <Card className="border-destructive/20 bg-destructive-foreground">

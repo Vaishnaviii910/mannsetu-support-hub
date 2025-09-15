@@ -31,7 +31,6 @@ const Records = () => {
     { title: "Dashboard", url: "/counselor-dashboard", icon: Calendar },
     { title: "Bookings", url: "/counselor/bookings", icon: Clock },
     { title: "Session Records", url: "/counselor/records", icon: FileText, isActive: true },
-    { title: "Students", url: "/counselor/students", icon: Users },
   ];
 
   const recentSessions = [
@@ -140,10 +139,9 @@ const Records = () => {
         </div>
 
         <Tabs defaultValue="records" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="records">Session Records</TabsTrigger>
             <TabsTrigger value="notes">Quick Notes</TabsTrigger>
-            <TabsTrigger value="templates">Templates</TabsTrigger>
           </TabsList>
 
           <TabsContent value="records" className="space-y-6">
@@ -350,34 +348,6 @@ const Records = () => {
                 </Button>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="templates" className="space-y-6">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sessionTemplates.map((template, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{template.name}</CardTitle>
-                    <CardDescription>
-                      Standardized template for consistent documentation
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="text-sm">
-                      <p className="font-medium mb-2">Sections included:</p>
-                      <ul className="space-y-1 text-muted-foreground">
-                        {template.sections.map((section, i) => (
-                          <li key={i}>• {section}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    <Button className="w-full">
-                      Use Template
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
           </TabsContent>
         </Tabs>
       </div>

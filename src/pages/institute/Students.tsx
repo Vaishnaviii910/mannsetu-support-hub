@@ -86,30 +86,78 @@ const Students = () => {
     { year: "4th Year", students: 659, support: 180, wellness: 74 }
   ];
 
-  const recentConcerns = [
-    {
-      category: "Academic Stress",
-      count: 234,
-      trend: "up",
-      description: "Exam-related anxiety and performance pressure"
+  const studentList = [
+    { 
+      id: "2024001", 
+      name: "Arjun Sharma", 
+      email: "arjun.sharma@student.iitd.ac.in", 
+      department: "Computer Science", 
+      year: "3rd Year",
+      riskLevel: "Low",
+      lastActive: "2 days ago"
     },
-    {
-      category: "Social Adjustment",
-      count: 156,
-      trend: "stable", 
-      description: "Difficulty with peer relationships and social integration"
+    { 
+      id: "2024002", 
+      name: "Priya Patel", 
+      email: "priya.patel@student.iitd.ac.in", 
+      department: "Mechanical", 
+      year: "2nd Year",
+      riskLevel: "Medium",
+      lastActive: "1 week ago"
     },
-    {
-      category: "Financial Stress",
-      count: 89,
-      trend: "up",
-      description: "Economic pressures affecting mental health"
+    { 
+      id: "2024003", 
+      name: "Rahul Kumar", 
+      email: "rahul.kumar@student.iitd.ac.in", 
+      department: "Electrical", 
+      year: "4th Year",
+      riskLevel: "Low",
+      lastActive: "3 days ago"
     },
-    {
-      category: "Career Anxiety",
-      count: 134,
-      trend: "down",
-      description: "Future planning and job market concerns"
+    { 
+      id: "2024004", 
+      name: "Sneha Gupta", 
+      email: "sneha.gupta@student.iitd.ac.in", 
+      department: "Chemical", 
+      year: "1st Year",
+      riskLevel: "High",
+      lastActive: "1 day ago"
+    },
+    { 
+      id: "2024005", 
+      name: "Vikram Singh", 
+      email: "vikram.singh@student.iitd.ac.in", 
+      department: "Civil", 
+      year: "3rd Year",
+      riskLevel: "Medium",
+      lastActive: "5 days ago"
+    },
+    { 
+      id: "2024006", 
+      name: "Anita Sharma", 
+      email: "anita.sharma@student.iitd.ac.in", 
+      department: "Electronics", 
+      year: "2nd Year",
+      riskLevel: "Low",
+      lastActive: "4 days ago"
+    },
+    { 
+      id: "2024007", 
+      name: "Ravi Mehta", 
+      email: "ravi.mehta@student.iitd.ac.in", 
+      department: "Biotechnology", 
+      year: "4th Year",
+      riskLevel: "Low",
+      lastActive: "1 week ago"
+    },
+    { 
+      id: "2024008", 
+      name: "Kavya Iyer", 
+      email: "kavya.iyer@student.iitd.ac.in", 
+      department: "Physics", 
+      year: "1st Year",
+      riskLevel: "Medium",
+      lastActive: "2 days ago"
     }
   ];
 
@@ -220,149 +268,91 @@ const Students = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue="departments" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="departments">By Department</TabsTrigger>
-            <TabsTrigger value="years">By Academic Year</TabsTrigger>
-            <TabsTrigger value="concerns">Common Concerns</TabsTrigger>
-            <TabsTrigger value="trends">Wellness Trends</TabsTrigger>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="studentlist">Student Directory</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="departments" className="space-y-6">
-            <div className="grid gap-6">
-              {departmentStats.map((dept) => (
-                <Card key={dept.name}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5 text-primary" />
-                        {dept.name} Department
-                      </CardTitle>
-                      <div className="flex items-center gap-4 text-sm">
-                        <Badge variant="outline">{dept.totalStudents} students</Badge>
-                        <Badge variant="secondary">{dept.inSupport} in support</Badge>
-                        <div className="flex items-center gap-1">
-                          <span className="text-muted-foreground">Avg Wellness:</span>
-                          <span className="font-semibold">{dept.avgWellness}%</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium mb-3">Support Utilization</h4>
-                        <Progress 
-                          value={(dept.inSupport / dept.totalStudents) * 100} 
-                          className="h-3 mb-2"
-                        />
-                        <p className="text-sm text-muted-foreground">
-                          {Math.round((dept.inSupport / dept.totalStudents) * 100)}% of students using support services
-                        </p>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-medium mb-3">Risk Distribution</h4>
-                        <div className="grid grid-cols-3 gap-2 text-center">
-                          <div className="p-3 rounded bg-success-soft">
-                            <div className="text-lg font-bold text-success">{dept.riskDistribution.low}</div>
-                            <div className="text-xs text-muted-foreground">Low Risk</div>
-                          </div>
-                          <div className="p-3 rounded bg-warning-soft">
-                            <div className="text-lg font-bold text-warning">{dept.riskDistribution.medium}</div>
-                            <div className="text-xs text-muted-foreground">Medium</div>
-                          </div>
-                          <div className="p-3 rounded bg-destructive-soft">
-                            <div className="text-lg font-bold text-destructive">{dept.riskDistribution.high}</div>
-                            <div className="text-xs text-muted-foreground">High Risk</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+          <TabsContent value="overview" className="space-y-6">
+            {/* Action Items moved inside the overview tab */}
+            <Card className="border-warning/20 bg-warning-foreground">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-warning">
+                  <AlertTriangle className="h-5 w-5" />
+                  Recommended Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="p-3 rounded-lg border">
+                  <p className="font-medium">Engineering Department - High Stress Levels</p>
+                  <p className="text-sm text-muted-foreground">
+                    Consider implementing targeted stress management workshops during exam periods.
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg border">
+                  <p className="font-medium">1st Year Students - Support Outreach</p>
+                  <p className="text-sm text-muted-foreground">
+                    Lower utilization rate suggests need for better awareness programs for new students.
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg border">
+                  <p className="font-medium">Financial Stress - Rising Concern</p>
+                  <p className="text-sm text-muted-foreground">
+                    Coordinate with financial aid office to address economic pressures affecting mental health.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          <TabsContent value="years" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              {yearWiseData.map((year) => (
-                <Card key={year.year}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-accent" />
-                      {year.year}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div>
-                        <div className="text-2xl font-bold text-primary">{year.students}</div>
-                        <div className="text-xs text-muted-foreground">Total Students</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-success">{year.support}</div>
-                        <div className="text-xs text-muted-foreground">In Support</div>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-bold text-accent">{year.wellness}%</div>
-                        <div className="text-xs text-muted-foreground">Avg Wellness</div>
-                      </div>
-                    </div>
-                    <Progress 
-                      value={(year.support / year.students) * 100}
-                      className="h-2"
-                    />
-                    <p className="text-sm text-muted-foreground text-center">
-                      {Math.round((year.support / year.students) * 100)}% utilization rate
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="concerns" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              {recentConcerns.map((concern) => (
-                <Card key={concern.category}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{concern.category}</CardTitle>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">{concern.count} cases</Badge>
-                        {getTrendIcon(concern.trend)}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">{concern.description}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">
-                        Trend: {concern.trend === 'up' ? 'Increasing' : concern.trend === 'down' ? 'Decreasing' : 'Stable'}
-                      </span>
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="trends" className="space-y-6">
+          <TabsContent value="studentlist" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Wellness Score Trends</CardTitle>
+                <CardTitle>Registered Students</CardTitle>
                 <CardDescription>
-                  Track overall student mental wellness over time
+                  Complete directory of students registered in the mental health support program
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  Comprehensive wellness trend charts would be implemented here
+                <div className="space-y-4">
+                  {studentList.map((student) => (
+                    <div key={student.id} className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/30 transition-colors">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 bg-primary-soft rounded-full flex items-center justify-center">
+                          <GraduationCap className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold">{student.name}</h4>
+                          <p className="text-sm text-muted-foreground">{student.email}</p>
+                          <div className="flex items-center gap-3 mt-1">
+                            <Badge variant="outline" className="text-xs">{student.department}</Badge>
+                            <Badge variant="outline" className="text-xs">{student.year}</Badge>
+                            <Badge 
+                              variant={
+                                student.riskLevel === "High" ? "destructive" :
+                                student.riskLevel === "Medium" ? "default" : "secondary"
+                              }
+                              className="text-xs"
+                            >
+                              {student.riskLevel} Risk
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Active {student.lastActive}</span>
+                        <Button variant="outline" size="sm">
+                          View Profile
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-6 flex justify-center">
+                  <Button variant="outline">
+                    Load More Students
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -370,34 +360,6 @@ const Students = () => {
         </Tabs>
 
         {/* Action Items */}
-        <Card className="border-warning/20 bg-warning-foreground">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-warning">
-              <AlertTriangle className="h-5 w-5" />
-              Recommended Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="p-3 rounded-lg border">
-              <p className="font-medium">Engineering Department - High Stress Levels</p>
-              <p className="text-sm text-muted-foreground">
-                Consider implementing targeted stress management workshops during exam periods.
-              </p>
-            </div>
-            <div className="p-3 rounded-lg border">
-              <p className="font-medium">1st Year Students - Support Outreach</p>
-              <p className="text-sm text-muted-foreground">
-                Lower utilization rate suggests need for better awareness programs for new students.
-              </p>
-            </div>
-            <div className="p-3 rounded-lg border">
-              <p className="font-medium">Financial Stress - Rising Concern</p>
-              <p className="text-sm text-muted-foreground">
-                Coordinate with financial aid office to address economic pressures affecting mental health.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
   );

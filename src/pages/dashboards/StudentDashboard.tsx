@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -20,12 +21,16 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 const StudentDashboard = () => {
   const sidebarItems = [
     { title: "Dashboard", url: "/student-dashboard", icon: Heart, isActive: true },
+    { title: "Mental Health Checkup", url: "/student/mental-health-checkup", icon: Brain },
     { title: "AI Chatbot", url: "/student/chatbot", icon: MessageCircle },
     { title: "Book Session", url: "/student/book-session", icon: Calendar },
     { title: "Peer Support", url: "/student/peer-support", icon: Users },
     { title: "Resources Hub", url: "/student/resources", icon: BookOpen },
   ];
 
+  const [selectedMood, setSelectedMood] = useState<number>(7);
+  const [todaysFocus, setTodaysFocus] = useState<string>("Practice mindfulness for 10 minutes");
+  
   const recentActivities = [
     { type: "session", title: "Counseling session completed", time: "2 days ago", status: "completed" },
     { type: "screening", title: "Monthly wellness check", time: "1 week ago", status: "pending" },
@@ -38,20 +43,6 @@ const StudentDashboard = () => {
     ghq: { score: 12, level: "Moderate", color: "bg-primary" },
   };
 
-  const wellnessTrend = [
-    { week: "Week 1", phq9: 12, gad7: 9, ghq: 15 },
-    { week: "Week 2", phq9: 10, gad7: 8, ghq: 14 },
-    { week: "Week 3", phq9: 9, gad7: 7, ghq: 13 },
-    { week: "Week 4", phq9: 8, gad7: 6, ghq: 12 },
-  ];
-
-  const activityData = [
-    { name: "Sessions", value: 12, color: "#8B9FE8" },
-    { name: "Resources", value: 18, color: "#A8C5A5" },
-    { name: "Peer Support", value: 8, color: "#DFA8D8" },
-    { name: "Self-Care", value: 15, color: "#F0C987" },
-  ];
-
   const moodData = [
     { day: "Mon", mood: 7 },
     { day: "Tue", mood: 6 },
@@ -59,7 +50,20 @@ const StudentDashboard = () => {
     { day: "Thu", mood: 7 },
     { day: "Fri", mood: 9 },
     { day: "Sat", mood: 8 },
-    { day: "Sun", mood: 8 },
+    { day: "Sun", mood: selectedMood },
+  ];
+
+  const moodOptions = [
+    { value: 1, label: "Very Sad", color: "bg-destructive", emoji: "😢" },
+    { value: 2, label: "Sad", color: "bg-destructive/70", emoji: "😟" },
+    { value: 3, label: "Down", color: "bg-warning", emoji: "😕" },
+    { value: 4, label: "Okay", color: "bg-warning/70", emoji: "😐" },
+    { value: 5, label: "Neutral", color: "bg-muted", emoji: "😶" },
+    { value: 6, label: "Good", color: "bg-success/70", emoji: "🙂" },
+    { value: 7, label: "Happy", color: "bg-success", emoji: "😊" },
+    { value: 8, label: "Great", color: "bg-primary/70", emoji: "😄" },
+    { value: 9, label: "Excellent", color: "bg-primary", emoji: "😁" },
+    { value: 10, label: "Amazing", color: "bg-accent", emoji: "🤩" },
   ];
 
   return (
@@ -112,24 +116,49 @@ const StudentDashboard = () => {
           </Card>
         </div>
 
-        {/* Wellness Trends & Activity Charts */}
-        <div className="grid lg:grid-cols-2 gap-8">
-          <Card className="bg-gradient-to-br from-card to-muted/30">
+        {/* Daily Mood Tracker */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2 bg-gradient-to-br from-card to-muted/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Wellness Progress
+                <Heart className="h-5 w-5" />
+                Daily Mood Tracker
               </CardTitle>
               <CardDescription>
-                Your mental health scores over the past month
+                Track your daily mood and see weekly patterns
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={wellnessTrend}>
+            <CardContent className="space-y-6">
+              <div>
+                <h4 className="font-medium mb-3">How are you feeling today?</h4>
+                <div className="grid grid-cols-5 gap-2">
+                  {moodOptions.map((mood) => (
+                    <button
+                      key={mood.value}
+                      onClick={() => setSelectedMood(mood.value)}
+                      className={`p-3 rounded-lg border text-center transition-all hover:shadow-soft ${
+                        selectedMood === mood.value 
+                          ? `${mood.color} border-current shadow-soft scale-105` 
+                          : 'border-border hover:border-border/80'
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">{mood.emoji}</div>
+                      <div className="text-xs font-medium">{mood.value}</div>
+                    </button>
+                  ))}
+                </div>
+                <div className="text-center mt-2">
+                  <Badge variant="outline">
+                    Today's Mood: {moodOptions.find(m => m.value === selectedMood)?.label}
+                  </Badge>
+                </div>
+              </div>
+              
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart data={moodData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" domain={[1, 10]} />
                   <Tooltip 
                     contentStyle={{ 
                       backgroundColor: "hsl(var(--card))", 
@@ -137,144 +166,59 @@ const StudentDashboard = () => {
                       borderRadius: "8px"
                     }} 
                   />
-                  <Line type="monotone" dataKey="phq9" stroke="#F0C987" strokeWidth={2} dot={{ fill: "#F0C987", r: 4 }} />
-                  <Line type="monotone" dataKey="gad7" stroke="#A8C5A5" strokeWidth={2} dot={{ fill: "#A8C5A5", r: 4 }} />
-                  <Line type="monotone" dataKey="ghq" stroke="#8B9FE8" strokeWidth={2} dot={{ fill: "#8B9FE8", r: 4 }} />
-                </LineChart>
+                  <Area type="monotone" dataKey="mood" stroke="#DFA8D8" fill="#DFA8D8" fillOpacity={0.3} />
+                </AreaChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-card to-muted/30">
+          <Card className="bg-gradient-to-br from-accent-soft/50 to-accent-soft/20 border-accent/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Activity Distribution
+                <CheckCircle className="h-5 w-5 text-accent" />
+                Today's Focus
               </CardTitle>
               <CardDescription>
-                Your engagement across different support services
+                Your wellness goal for today
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex justify-center">
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie
-                      data={activityData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {activityData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: "hsl(var(--card))", 
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px"
-                      }} 
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+            <CardContent className="space-y-4">
+              <div className="p-4 rounded-lg bg-accent-soft/30 border border-accent/20">
+                <p className="font-medium text-accent">{todaysFocus}</p>
               </div>
-              <div className="grid grid-cols-2 gap-3 mt-4">
-                {activityData.map((item, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-sm text-muted-foreground">{item.name}</span>
-                    <span className="text-sm font-medium">{item.value}</span>
-                  </div>
-                ))}
+              
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium">Quick Actions</h4>
+                <div className="space-y-2">
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Activity className="h-4 w-4 mr-2" />
+                    Log mood check-in
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Brain className="h-4 w-4 mr-2" />
+                    Take mental health checkup
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Heart className="h-4 w-4 mr-2" />
+                    Practice self-care
+                  </Button>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Daily Mood Tracker */}
-        <Card className="bg-gradient-to-br from-card to-muted/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Heart className="h-5 w-5" />
-              Daily Mood Tracker
-            </CardTitle>
-            <CardDescription>
-              Your mood patterns throughout the week
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={moodData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: "hsl(var(--card))", 
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px"
-                  }} 
+              <div className="mt-4">
+                <label className="text-sm font-medium">Update today's focus:</label>
+                <input
+                  type="text"
+                  value={todaysFocus}
+                  onChange={(e) => setTodaysFocus(e.target.value)}
+                  className="w-full mt-1 p-2 text-sm border rounded-md"
+                  placeholder="Set your wellness goal..."
                 />
-                <Area type="monotone" dataKey="mood" stroke="#DFA8D8" fill="#DFA8D8" fillOpacity={0.3} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-primary-soft/50 to-primary-soft/20 border-primary/10">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-primary-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
-                <MessageCircle className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">AI Support</h3>
-                <p className="text-sm text-muted-foreground">Get instant help and coping strategies</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-success-soft/50 to-success-soft/20 border-success/10">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-success-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
-                <Calendar className="h-6 w-6 text-success" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Book Session</h3>
-                <p className="text-sm text-muted-foreground">Schedule with a counselor</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-accent-soft/50 to-accent-soft/20 border-accent/10">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-accent-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
-                <Users className="h-6 w-6 text-accent" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Peer Support</h3>
-                <p className="text-sm text-muted-foreground">Connect with fellow students</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-soft transition-all duration-300 cursor-pointer bg-gradient-to-br from-warning-soft/50 to-warning-soft/20 border-warning/10">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="w-12 h-12 bg-warning-soft rounded-xl flex items-center justify-center mx-auto shadow-soft">
-                <BookOpen className="h-6 w-6 text-warning" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Resources</h3>
-                <p className="text-sm text-muted-foreground">Educational content & guides</p>
               </div>
             </CardContent>
           </Card>
         </div>
+
 
         {/* Recent Activity */}
         <Card>

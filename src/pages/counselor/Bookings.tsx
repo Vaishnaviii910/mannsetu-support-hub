@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useToast } from "@/hooks/use-toast";
+import { RejectBookingDialog } from "@/components/ui/dialog-reject";
 
 const Bookings = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -29,7 +30,6 @@ const Bookings = () => {
     { title: "Dashboard", url: "/counselor-dashboard", icon: CalendarIcon },
     { title: "Bookings", url: "/counselor/bookings", icon: Clock, isActive: true },
     { title: "Session Records", url: "/counselor/records", icon: FileText },
-    { title: "Students", url: "/counselor/students", icon: Users },
   ];
 
   const pendingRequests = [
@@ -108,10 +108,10 @@ const Bookings = () => {
     });
   };
 
-  const handleDeclineRequest = (requestId: number) => {
+  const handleRejectRequest = (requestId: number, reason: string) => {
     toast({
-      title: "Session Declined",
-      description: "Alternative slots have been suggested to the student.",
+      title: "Session Rejected",
+      description: `Request rejected. Reason: ${reason}`,
       variant: "destructive"
     });
   };
@@ -203,13 +203,12 @@ const Bookings = () => {
                           <CheckCircle className="h-4 w-4 mr-2" />
                           Approve & Schedule
                         </Button>
-                        <Button 
-                          variant="outline"
-                          onClick={() => handleDeclineRequest(request.id)}
-                        >
-                          <XCircle className="h-4 w-4 mr-2" />
-                          Suggest Alternatives
-                        </Button>
+                        <RejectBookingDialog onReject={(reason) => handleRejectRequest(request.id, reason)}>
+                          <Button variant="destructive">
+                            <XCircle className="h-4 w-4 mr-2" />
+                            Reject
+                          </Button>
+                        </RejectBookingDialog>
                         <Button variant="outline" size="sm">
                           <MessageCircle className="h-4 w-4" />
                         </Button>

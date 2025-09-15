@@ -9,6 +9,7 @@ import Signup from "./pages/auth/Signup";
 import StudentDashboard from "./pages/dashboards/StudentDashboard";
 import CounselorDashboard from "./pages/dashboards/CounselorDashboard";
 import InstituteDashboard from "./pages/dashboards/InstituteDashboard";
+import MentalHealthCheckup from "./pages/student/MentalHealthCheckup";
 import Chatbot from "./pages/student/Chatbot";
 import BookSession from "./pages/student/BookSession";
 import PeerSupport from "./pages/student/PeerSupport";
@@ -40,7 +41,7 @@ const App = () => (
           <Route path="/student/chatbot" element={<Chatbot />} />
           <Route path="/student/book-session" element={<BookSession />} />
           <Route path="/student/peer-support" element={<PeerSupport />} />
-          <Route path="/student/resources" element={<ResourcesHub />} />
+          <Route path="/student/mental-health-checkup" element={<MentalHealthCheckup />} />
           
           {/* Counselor Routes */}
           <Route path="/counselor-dashboard" element={<CounselorDashboard />} />
