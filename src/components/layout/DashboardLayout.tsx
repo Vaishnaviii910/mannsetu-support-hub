@@ -14,7 +14,8 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Heart, LogOut, Settings, User, Bell } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import type { LucideIcon } from "lucide-react";
 
 interface SidebarItem {
@@ -32,11 +33,10 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, sidebarItems, userType, userName }: DashboardLayoutProps) {
-  const navigate = useNavigate();
+  const { signOut } = useAuth();
 
-  const handleLogout = () => {
-    // In a real app, this would clear authentication state
-    navigate("/");
+  const handleLogout = async () => {
+    await signOut();
   };
 
   const getUserTypeLabel = () => {
@@ -55,10 +55,8 @@ export function DashboardLayout({ children, sidebarItems, userType, userName }: 
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        {/* Sidebar */}
         <Sidebar className="border-r bg-card">
           <SidebarContent>
-            {/* Header */}
             <div className="p-4 border-b">
               <div className="flex items-center space-x-2">
                 <Heart className="h-6 w-6 text-primary" />
@@ -66,7 +64,6 @@ export function DashboardLayout({ children, sidebarItems, userType, userName }: 
               </div>
             </div>
 
-            {/* User Profile */}
             <div className="p-4 border-b">
               <div className="flex items-center space-x-3">
                 <Avatar>
@@ -81,7 +78,6 @@ export function DashboardLayout({ children, sidebarItems, userType, userName }: 
               </div>
             </div>
 
-            {/* Navigation */}
             <SidebarGroup>
               <SidebarGroupLabel>Navigation</SidebarGroupLabel>
               <SidebarGroupContent>
@@ -100,7 +96,6 @@ export function DashboardLayout({ children, sidebarItems, userType, userName }: 
               </SidebarGroupContent>
             </SidebarGroup>
 
-            {/* Account Actions */}
             <div className="mt-auto p-4 border-t space-y-2">
               <Button variant="ghost" className="w-full justify-start" size="sm">
                 <Settings className="mr-2 h-4 w-4" />
@@ -123,9 +118,7 @@ export function DashboardLayout({ children, sidebarItems, userType, userName }: 
           </SidebarContent>
         </Sidebar>
 
-        {/* Main Content */}
         <div className="flex-1 flex flex-col">
-          {/* Header */}
           <header className="h-14 border-b bg-card/50 backdrop-blur-sm flex items-center justify-between px-4">
             <SidebarTrigger />
             <div className="flex items-center space-x-4">
@@ -135,7 +128,6 @@ export function DashboardLayout({ children, sidebarItems, userType, userName }: 
             </div>
           </header>
 
-          {/* Page Content */}
           <main className="flex-1 p-8 overflow-auto">
             {children}
           </main>
