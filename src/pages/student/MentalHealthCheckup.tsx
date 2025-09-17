@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -13,6 +13,17 @@ import {
 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useToast } from "@/hooks/use-toast";
+import { useStudentData } from "@/hooks/useStudentData";
+import { useAuth } from "@/hooks/useAuth";
+
+const MentalHealthCheckup = () => {
+  const { user } = useAuth();
+  const { studentData, submitPHQTest, loading } = useStudentData();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [testResult, setTestResult] = useState<any>(null);
+  const { toast } = useToast();
 
 const MentalHealthCheckup = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -64,14 +75,23 @@ const MentalHealthCheckup = () => {
     }
   };
 
-  const handleComplete = () => {
-    const totalScore = Object.values(answers).reduce((sum, score) => sum + score, 0);
-    setIsCompleted(true);
-    
-    toast({
-      title: "Assessment Complete!",
-      description: `Your PHQ-9 score has been recorded: ${totalScore}/27`,
-    });
+  const handleComplete = async () => {
+    const result = await submitPHQTest(answers);
+    if (result.error) {
+      toast({
+        title: "Error",
+        description: "Failed to save your assessment. Please try again.",
+        variant: "destructive",
+      });
+    } else {
+      setTestResult(result);
+      setIsCompleted(true);
+      
+      toast({
+        title: "Assessment Complete!",
+        description: `Your PHQ-9 score has been recorded: ${result.score}/27`,
+      });
+    }
   };
 
   const getScoreInterpretation = (score: number) => {
@@ -82,12 +102,22 @@ const MentalHealthCheckup = () => {
     return { level: "Severe", color: "destructive", description: "Severe depression symptoms" };
   };
 
-  const totalScore = Object.values(answers).reduce((sum, score) => sum + score, 0);
+  const totalScore = testResult?.score || Object.values(answers).reduce((sum, score) => sum + score, 0);
   const interpretation = getScoreInterpretation(totalScore);
+
+  if (loading) {
+    return (
+      <DashboardLayout sidebarItems={sidebarItems} userType="student" userName={studentData?.full_name || "Student"}>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   if (isCompleted) {
     return (
-      <DashboardLayout sidebarItems={sidebarItems} userType="student" userName="Alex Johnson">
+      <DashboardLayout sidebarItems={sidebarItems} userType="student" userName={studentData?.full_name || "Student"}>
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="text-center space-y-4">
             <div className="w-20 h-20 bg-gradient-to-br from-success to-primary rounded-full flex items-center justify-center mx-auto">
@@ -170,7 +200,7 @@ const MentalHealthCheckup = () => {
   }
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems} userType="student" userName="Alex Johnson">
+    <DashboardLayout sidebarItems={sidebarItems} userType="student" userName={studentData?.full_name || "Student"}>
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center mx-auto">

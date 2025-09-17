@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -16,9 +16,16 @@ import {
   Activity
 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
+import { useStudentData } from "@/hooks/useStudentData";
+import { useAuth } from "@/hooks/useAuth";
 
 const StudentDashboard = () => {
+  const { user } = useAuth();
+  const { studentData, phqTests, bookings, moodEntries, loading, addMoodEntry } = useStudentData();
+  const [selectedMood, setSelectedMood] = useState<number>(7);
+  const [todaysFocus, setTodaysFocus] = useState<string>("Practice mindfulness for 10 minutes");
+
   const sidebarItems = [
     { title: "Dashboard", url: "/student-dashboard", icon: Heart, isActive: true },
     { title: "Mental Health Checkup", url: "/student/mental-health-checkup", icon: Brain },
@@ -28,30 +35,54 @@ const StudentDashboard = () => {
     { title: "Resources Hub", url: "/student/resources", icon: BookOpen },
   ];
 
-  const [selectedMood, setSelectedMood] = useState<number>(7);
-  const [todaysFocus, setTodaysFocus] = useState<string>("Practice mindfulness for 10 minutes");
+  // Get latest PHQ test results
+  const latestPHQTest = phqTests[0];
+  const phqScore = latestPHQTest?.score || 0;
+  const phqLevel = latestPHQTest?.severity_level || 'Not Available';
   
+  // Process mood data for chart
+  const moodData = moodEntries.slice(0, 7).reverse().map(entry => ({
+    day: new Date(entry.entry_date).toLocaleDateString('en', { weekday: 'short' }),
+    mood: parseInt(entry.mood)
+  }));
+
+  // Add today's mood if selected
+  if (moodData.length < 7) {
+    moodData.push({
+      day: new Date().toLocaleDateString('en', { weekday: 'short' }),
+      mood: selectedMood
+    });
+  }
+
+  // Recent activities from bookings and tests
   const recentActivities = [
-    { type: "session", title: "Counseling session completed", time: "2 days ago", status: "completed" },
-    { type: "screening", title: "Monthly wellness check", time: "1 week ago", status: "pending" },
-    { type: "resource", title: "Stress management guide viewed", time: "3 days ago", status: "completed" },
+    ...bookings.slice(0, 2).map(booking => ({
+      type: "session",
+      title: `Session with ${booking.counselors?.full_name}`,
+      time: new Date(booking.booking_date).toLocaleDateString(),
+      status: booking.status
+    })),
+    ...(latestPHQTest ? [{
+      type: "screening",
+      title: "Mental health screening completed",
+      time: new Date(latestPHQTest.test_date).toLocaleDateString(),
+      status: "completed"
+    }] : [])
   ];
 
-  const wellnessScores = {
-    phq9: { score: 8, level: "Mild", color: "bg-warning" },
-    gad7: { score: 6, level: "Mild", color: "bg-success" },
-    ghq: { score: 12, level: "Moderate", color: "bg-primary" },
+  const handleMoodSubmit = async () => {
+    await addMoodEntry(selectedMood);
   };
 
-  const moodData = [
-    { day: "Mon", mood: 7 },
-    { day: "Tue", mood: 6 },
-    { day: "Wed", mood: 8 },
-    { day: "Thu", mood: 7 },
-    { day: "Fri", mood: 9 },
-    { day: "Sat", mood: 8 },
-    { day: "Sun", mood: selectedMood },
-  ];
+  if (loading) {
+    return (
+      <DashboardLayout sidebarItems={sidebarItems} userType="student" userName={studentData?.full_name || "Student"}>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const moodOptions = [
     { value: 1, label: "Very Sad", color: "bg-destructive", emoji: "😢" },
@@ -67,11 +98,11 @@ const StudentDashboard = () => {
   ];
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems} userType="student" userName="Alex Johnson">
+    <DashboardLayout sidebarItems={sidebarItems} userType="student" userName={studentData?.full_name || "Student"}>
       <div className="space-y-8">
         {/* Welcome Section */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Welcome back, Alex!</h1>
+          <h1 className="text-3xl font-bold">Welcome back, {studentData?.full_name}!</h1>
           <p className="text-muted-foreground">
             Here's your mental wellness overview. Remember, seeking support is a sign of strength.
           </p>
@@ -85,33 +116,33 @@ const StudentDashboard = () => {
               <Brain className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{wellnessScores.phq9.score}/27</div>
-              <Badge variant="secondary" className="mt-2">{wellnessScores.phq9.level}</Badge>
-              <Progress value={(wellnessScores.phq9.score / 27) * 100} className="mt-3" />
+              <div className="text-2xl font-bold">{phqScore}/27</div>
+              <Badge variant="secondary" className="mt-2">{phqLevel}</Badge>
+              <Progress value={(phqScore / 27) * 100} className="mt-3" />
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-success-soft to-success-soft/30 border-success/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">GAD-7 Score</CardTitle>
-              <Heart className="h-4 w-4 text-success" />
+              <CardTitle className="text-sm font-medium">Active Bookings</CardTitle>
+              <Calendar className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{wellnessScores.gad7.score}/21</div>
-              <Badge variant="secondary" className="mt-2">{wellnessScores.gad7.level}</Badge>
-              <Progress value={(wellnessScores.gad7.score / 21) * 100} className="mt-3" />
+              <div className="text-2xl font-bold">{bookings.filter(b => b.status === 'confirmed').length}</div>
+              <Badge variant="secondary" className="mt-2">Upcoming</Badge>
+              <Progress value={bookings.length > 0 ? 100 : 0} className="mt-3" />
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-accent-soft to-accent-soft/30 border-accent/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">GHQ Score</CardTitle>
+              <CardTitle className="text-sm font-medium">Wellness Streak</CardTitle>
               <TrendingUp className="h-4 w-4 text-accent" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{wellnessScores.ghq.score}/36</div>
-              <Badge variant="secondary" className="mt-2">{wellnessScores.ghq.level}</Badge>
-              <Progress value={(wellnessScores.ghq.score / 36) * 100} className="mt-3" />
+              <div className="text-2xl font-bold">{moodEntries.length}</div>
+              <Badge variant="secondary" className="mt-2">Days tracked</Badge>
+              <Progress value={Math.min((moodEntries.length / 30) * 100, 100)} className="mt-3" />
             </CardContent>
           </Card>
         </div>
@@ -190,9 +221,9 @@ const StudentDashboard = () => {
               <div className="space-y-3">
                 <h4 className="text-sm font-medium">Quick Actions</h4>
                 <div className="space-y-2">
-                  <Button variant="outline" size="sm" className="w-full justify-start">
+                  <Button variant="outline" size="sm" className="w-full justify-start" onClick={handleMoodSubmit}>
                     <Activity className="h-4 w-4 mr-2" />
-                    Log mood check-in
+                    Save today's mood
                   </Button>
                   <Button variant="outline" size="sm" className="w-full justify-start">
                     <Brain className="h-4 w-4 mr-2" />
@@ -219,7 +250,6 @@ const StudentDashboard = () => {
           </Card>
         </div>
 
-
         {/* Recent Activity */}
         <Card>
           <CardHeader>
@@ -233,10 +263,10 @@ const StudentDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivities.map((activity, index) => (
+              {recentActivities.length > 0 ? recentActivities.map((activity, index) => (
                 <div key={index} className="flex items-center space-x-4 p-3 rounded-lg bg-muted/30">
                   <div className="flex-shrink-0">
-                    {activity.status === "completed" ? (
+                    {activity.status === "completed" || activity.status === "confirmed" ? (
                       <CheckCircle className="h-5 w-5 text-success" />
                     ) : (
                       <Clock className="h-5 w-5 text-warning" />
@@ -246,11 +276,13 @@ const StudentDashboard = () => {
                     <p className="font-medium">{activity.title}</p>
                     <p className="text-sm text-muted-foreground">{activity.time}</p>
                   </div>
-                  <Badge variant={activity.status === "completed" ? "default" : "secondary"}>
+                  <Badge variant={activity.status === "completed" || activity.status === "confirmed" ? "default" : "secondary"}>
                     {activity.status}
                   </Badge>
                 </div>
-              ))}
+              )) : (
+                <p className="text-muted-foreground text-center py-4">No recent activities yet</p>
+              )}
             </div>
           </CardContent>
         </Card>
