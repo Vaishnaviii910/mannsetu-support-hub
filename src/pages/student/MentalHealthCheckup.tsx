@@ -25,12 +25,6 @@ const MentalHealthCheckup = () => {
   const [testResult, setTestResult] = useState<any>(null);
   const { toast } = useToast();
 
-const MentalHealthCheckup = () => {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [isCompleted, setIsCompleted] = useState(false);
-  const { toast } = useToast();
-
   const sidebarItems = [
     { title: "Dashboard", url: "/student-dashboard", icon: Heart },
     { title: "Mental Health Checkup", url: "/student/mental-health-checkup", icon: Brain, isActive: true },
