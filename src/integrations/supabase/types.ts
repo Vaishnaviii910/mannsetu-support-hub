@@ -161,6 +161,7 @@ export type Database = {
       counselors: {
         Row: {
           bio: string | null
+          counselor_id: string
           created_at: string
           experience_years: number | null
           full_name: string
@@ -175,6 +176,7 @@ export type Database = {
         }
         Insert: {
           bio?: string | null
+          counselor_id?: string
           created_at?: string
           experience_years?: number | null
           full_name: string
@@ -189,6 +191,7 @@ export type Database = {
         }
         Update: {
           bio?: string | null
+          counselor_id?: string
           created_at?: string
           experience_years?: number | null
           full_name?: string
@@ -583,6 +586,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_counselor_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_student_id: {
         Args: Record<PropertyKey, never>
         Returns: string
