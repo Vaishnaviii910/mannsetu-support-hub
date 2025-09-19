@@ -5,6 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   UserCheck, 
   Plus, 
@@ -21,11 +24,29 @@ import {
   Edit,
   MoreHorizontal,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Loader2
 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { useInstituteData } from "@/hooks/useInstituteData";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const CounselorManagement = () => {
+  const { counselors, loading, createCounselor, updateCounselorStatus, refreshData } = useInstituteData();
+  const { toast } = useToast();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newCounselorData, setNewCounselorData] = useState({
+    full_name: '',
+    email: '',
+    password: '',
+    phone: '',
+    speciality: '',
+    qualifications: '',
+    experience_years: 0,
+    bio: ''
+  });
+
   const sidebarItems = [
     { title: "Dashboard", url: "/institute-dashboard", icon: BarChart3 },
     { title: "Counselor Management", url: "/institute/counselors", icon: UserCheck, isActive: true },
@@ -34,94 +55,49 @@ const CounselorManagement = () => {
     { title: "Settings", url: "/institute/settings", icon: Settings },
   ];
 
-  const counselors = [
-    {
-      id: 1,
-      name: "Dr. Sarah Wilson",
-      email: "s.wilson@institute.edu",
-      phone: "+1 (555) 0123",
-      specialization: "Anxiety & Depression",
-      experience: "8 years",
-      qualification: "PhD Clinical Psychology",
-      status: "Active",
-      caseload: 24,
-      maxCaseload: 30,
-      rating: 4.9,
-      sessionsThisMonth: 68,
-      availability: "Full-time",
-      joinDate: "2019-08-15",
-      lastActive: "Online now"
-    },
-    {
-      id: 2,
-      name: "Dr. Michael Chen", 
-      email: "m.chen@institute.edu",
-      phone: "+1 (555) 0124",
-      specialization: "Academic Stress & ADHD",
-      experience: "6 years", 
-      qualification: "PhD Counseling Psychology",
-      status: "Active",
-      caseload: 28,
-      maxCaseload: 30,
-      rating: 4.8,
-      sessionsThisMonth: 72,
-      availability: "Full-time",
-      joinDate: "2020-01-10",
-      lastActive: "2 hours ago"
-    },
-    {
-      id: 3,
-      name: "Dr. Priya Sharma",
-      email: "p.sharma@institute.edu", 
-      phone: "+1 (555) 0125",
-      specialization: "Relationship & Social Issues",
-      experience: "10 years",
-      qualification: "PhD Clinical Psychology",
-      status: "Active", 
-      caseload: 22,
-      maxCaseload: 25,
-      rating: 4.9,
-      sessionsThisMonth: 54,
-      availability: "Part-time",
-      joinDate: "2018-03-22",
-      lastActive: "1 day ago"
-    },
-    {
-      id: 4,
-      name: "Dr. James Rodriguez",
-      email: "j.rodriguez@institute.edu",
-      phone: "+1 (555) 0126", 
-      specialization: "Crisis Intervention",
-      experience: "12 years",
-      qualification: "PhD Clinical Psychology",
-      status: "On Leave",
-      caseload: 0,
-      maxCaseload: 20,
-      rating: 5.0,
-      sessionsThisMonth: 0,
-      availability: "Medical Leave",
-      joinDate: "2017-09-05",
-      lastActive: "2 weeks ago"
+  const handleAddCounselor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newCounselorData.full_name || !newCounselorData.email || !newCounselorData.password) {
+      toast({
+        title: "Missing Required Fields",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
     }
-  ];
 
-  const recentActivity = [
-    {
-      type: "new_hire",
-      message: "Dr. Amanda Foster joined as Crisis Counselor",
-      time: "3 days ago"
-    },
-    {
-      type: "certification",
-      message: "Dr. Sarah Wilson completed EMDR certification",
-      time: "1 week ago"
-    },
-    {
-      type: "capacity",
-      message: "Dr. Michael Chen reached 90% caseload capacity",
-      time: "2 weeks ago"
+    const { error } = await createCounselor(newCounselorData);
+    
+    if (!error) {
+      toast({
+        title: "Counselor Added",
+        description: `${newCounselorData.full_name} has been successfully added to your institute`,
+      });
+      setIsAddDialogOpen(false);
+      setNewCounselorData({
+        full_name: '',
+        email: '',
+        password: '',
+        phone: '',
+        speciality: '',
+        qualifications: '',
+        experience_years: 0,
+        bio: ''
+      });
     }
-  ];
+  };
+
+  const handleUpdateStatus = async (counselorId: string, isActive: boolean) => {
+    const { error } = await updateCounselorStatus(counselorId, isActive);
+    
+    if (!error) {
+      toast({
+        title: "Status Updated",
+        description: `Counselor status has been updated`,
+      });
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -156,10 +132,111 @@ const CounselorManagement = () => {
                 Manage your counseling team, track performance, and oversee workload distribution
               </p>
             </div>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Add New Counselor
-            </Button>
+            
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add New Counselor
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Add New Counselor</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleAddCounselor} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="full_name">Full Name *</Label>
+                    <Input
+                      id="full_name"
+                      value={newCounselorData.full_name}
+                      onChange={(e) => setNewCounselorData({...newCounselorData, full_name: e.target.value})}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={newCounselorData.email}
+                      onChange={(e) => setNewCounselorData({...newCounselorData, email: e.target.value})}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password *</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={newCounselorData.password}
+                      onChange={(e) => setNewCounselorData({...newCounselorData, password: e.target.value})}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      value={newCounselorData.phone}
+                      onChange={(e) => setNewCounselorData({...newCounselorData, phone: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="speciality">Specialization</Label>
+                    <Input
+                      id="speciality"
+                      value={newCounselorData.speciality}
+                      onChange={(e) => setNewCounselorData({...newCounselorData, speciality: e.target.value})}
+                      placeholder="e.g., Anxiety & Depression"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="qualifications">Qualifications</Label>
+                    <Input
+                      id="qualifications"
+                      value={newCounselorData.qualifications}
+                      onChange={(e) => setNewCounselorData({...newCounselorData, qualifications: e.target.value})}
+                      placeholder="e.g., PhD Clinical Psychology"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="experience_years">Years of Experience</Label>
+                    <Input
+                      id="experience_years"
+                      type="number"
+                      value={newCounselorData.experience_years}
+                      onChange={(e) => setNewCounselorData({...newCounselorData, experience_years: parseInt(e.target.value) || 0})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="bio">Bio</Label>
+                    <Textarea
+                      id="bio"
+                      value={newCounselorData.bio}
+                      onChange={(e) => setNewCounselorData({...newCounselorData, bio: e.target.value})}
+                      placeholder="Brief professional bio..."
+                    />
+                  </div>
+                  
+                  <div className="flex gap-2 pt-4">
+                    <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)} className="flex-1">
+                      Cancel
+                    </Button>
+                    <Button type="submit" className="flex-1">
+                      Add Counselor
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Search and Filters */}
@@ -184,159 +261,162 @@ const CounselorManagement = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Overview Stats */}
-            <div className="grid md:grid-cols-4 gap-6">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total Counselors</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{counselors.length}</div>
-                  <p className="text-xs text-muted-foreground">+1 this month</p>
-                </CardContent>
-              </Card>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : (
+              <>
+                {/* Overview Stats */}
+                <div className="grid md:grid-cols-4 gap-6">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Total Counselors</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{counselors.length}</div>
+                      <p className="text-xs text-muted-foreground">Total in your institute</p>
+                    </CardContent>
+                  </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Active Counselors</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{counselors.filter(c => c.status === "Active").length}</div>
-                  <p className="text-xs text-muted-foreground">Currently available</p>
-                </CardContent>
-              </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Active Counselors</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{counselors.filter(c => c.is_active).length}</div>
+                      <p className="text-xs text-muted-foreground">Currently available</p>
+                    </CardContent>
+                  </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Avg Caseload</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {Math.round(counselors.reduce((acc, c) => acc + c.caseload, 0) / counselors.filter(c => c.status === "Active").length)}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Students per counselor</p>
-                </CardContent>
-              </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Avg Experience</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {counselors.length > 0 ? Math.round(counselors.reduce((acc, c) => acc + (c.experience_years || 0), 0) / counselors.length) : 0}
+                      </div>
+                      <p className="text-xs text-muted-foreground">Years average</p>
+                    </CardContent>
+                  </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Sessions This Month</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {counselors.reduce((acc, c) => acc + c.sessionsThisMonth, 0)}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Total sessions</p>
-                </CardContent>
-              </Card>
-            </div>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Specializations</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {new Set(counselors.map(c => c.speciality).filter(Boolean)).size}
+                      </div>
+                      <p className="text-xs text-muted-foreground">Different areas</p>
+                    </CardContent>
+                  </Card>
+                </div>
 
-            {/* Counselors List */}
-            <div className="space-y-4">
-              {counselors.map((counselor) => (
-                <Card key={counselor.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-4">
-                        <Avatar className="h-16 w-16">
-                          <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                            {counselor.name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3 className="font-semibold text-xl">{counselor.name}</h3>
-                          <p className="text-muted-foreground">{counselor.specialization}</p>
-                          <p className="text-sm text-muted-foreground">{counselor.qualification}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge variant={getStatusColor(counselor.status)}>
-                              {counselor.status}
-                            </Badge>
-                            <Badge variant="outline">{counselor.availability}</Badge>
-                            <div className="flex items-center gap-1">
-                              <Star className="h-3 w-3 fill-warning text-warning" />
-                              <span className="text-sm">{counselor.rating}</span>
+                {/* Counselors List */}
+                <div className="space-y-4">
+                  {counselors.length === 0 ? (
+                    <Card>
+                      <CardContent className="text-center py-12">
+                        <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-semibold mb-2">No Counselors Yet</h3>
+                        <p className="text-muted-foreground mb-4">Start by adding your first counselor to begin providing mental health support.</p>
+                        <Button onClick={() => setIsAddDialogOpen(true)}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Your First Counselor
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    counselors.map((counselor) => (
+                      <Card key={counselor.id} className="hover:shadow-md transition-shadow">
+                        <CardContent className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center space-x-4">
+                              <Avatar className="h-16 w-16">
+                                <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                                  {counselor.full_name.split(' ').map(n => n[0]).join('')}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <h3 className="font-semibold text-xl">{counselor.full_name}</h3>
+                                <p className="text-muted-foreground">{counselor.speciality || 'General Counseling'}</p>
+                                <p className="text-sm text-muted-foreground">{counselor.qualifications || 'Professional Counselor'}</p>
+                                <div className="flex items-center gap-2 mt-2">
+                                  <Badge variant={counselor.is_active ? "default" : "secondary"}>
+                                    {counselor.is_active ? "Active" : "Inactive"}
+                                  </Badge>
+                                  {counselor.experience_years && (
+                                    <Badge variant="outline">{counselor.experience_years} years exp.</Badge>
+                                  )}
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-sm">ID: {counselor.counselor_id}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleUpdateStatus(counselor.id, !counselor.is_active)}
+                              >
+                                {counselor.is_active ? 'Deactivate' : 'Activate'}
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          <Phone className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Mail className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
 
-                    <div className="grid md:grid-cols-3 gap-6 mb-4">
-                      <div>
-                        <h4 className="font-medium text-sm mb-3">Contact Information</h4>
-                        <div className="space-y-2 text-sm">
-                          <p className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-muted-foreground" />
-                            {counselor.email}
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-muted-foreground" />
-                            {counselor.phone}
-                          </p>
-                        </div>
-                      </div>
+                          <div className="grid md:grid-cols-2 gap-6 mb-4">
+                            <div>
+                              <h4 className="font-medium text-sm mb-3">Contact Information</h4>
+                              <div className="space-y-2 text-sm">
+                                <p className="flex items-center gap-2">
+                                  <Phone className="h-4 w-4 text-muted-foreground" />
+                                  {counselor.phone || 'Not provided'}
+                                </p>
+                                <p className="text-muted-foreground">
+                                  Joined: {new Date(counselor.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
 
-                      <div>
-                        <h4 className="font-medium text-sm mb-3">Caseload Status</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span>Current: {counselor.caseload}/{counselor.maxCaseload}</span>
-                            <span className={getCaseloadColor(counselor.caseload, counselor.maxCaseload)}>
-                              {Math.round((counselor.caseload / counselor.maxCaseload) * 100)}%
-                            </span>
+                            <div>
+                              <h4 className="font-medium text-sm mb-3">Professional Details</h4>
+                              <div className="space-y-1 text-sm">
+                                <p>Experience: <span className="font-medium">{counselor.experience_years || 0} years</span></p>
+                                <p>Status: <span className="font-medium">{counselor.is_active ? 'Available' : 'Unavailable'}</span></p>
+                                {counselor.bio && (
+                                  <p className="text-muted-foreground mt-2">{counselor.bio}</p>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <Progress 
-                            value={(counselor.caseload / counselor.maxCaseload) * 100} 
-                            className="h-2"
-                          />
-                        </div>
-                      </div>
 
-                      <div>
-                        <h4 className="font-medium text-sm mb-3">Activity Summary</h4>
-                        <div className="space-y-1 text-sm">
-                          <p>Sessions this month: <span className="font-medium">{counselor.sessionsThisMonth}</span></p>
-                          <p>Experience: <span className="font-medium">{counselor.experience}</span></p>
-                          <p>Last active: <span className="font-medium">{counselor.lastActive}</span></p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <div className="text-sm text-muted-foreground">
-                        Joined: {new Date(counselor.joinDate).toLocaleDateString()}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          View Schedule
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          Performance Report
-                        </Button>
-                        <Button size="sm">
-                          Assign Students
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                          <div className="flex items-center justify-between pt-4 border-t">
+                            <div className="text-sm text-muted-foreground">
+                              Last updated: {new Date(counselor.updated_at).toLocaleDateString()}
+                            </div>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm">
+                                View Details
+                              </Button>
+                              <Button size="sm">
+                                Manage Schedule
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-6">
@@ -393,28 +473,45 @@ const CounselorManagement = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              Recent Activity
+              Counselor Overview
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-center space-x-3 p-3 rounded-lg border">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    activity.type === 'new_hire' ? 'bg-success-soft' :
-                    activity.type === 'certification' ? 'bg-primary-soft' : 'bg-warning-soft'
-                  }`}>
-                    {activity.type === 'new_hire' ? <CheckCircle className="h-4 w-4 text-success" /> :
-                     activity.type === 'certification' ? <Star className="h-4 w-4 text-primary" /> :
-                     <AlertTriangle className="h-4 w-4 text-warning" />}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{activity.message}</p>
-                    <p className="text-xs text-muted-foreground">{activity.time}</p>
-                  </div>
+            {counselors.length > 0 ? (
+              <div className="space-y-3">
+                <div className="text-sm text-muted-foreground">
+                  You have {counselors.filter(c => c.is_active).length} active counselors out of {counselors.length} total.
                 </div>
-              ))}
-            </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {counselors.slice(0, 4).map((counselor) => (
+                    <div key={counselor.id} className="flex items-center space-x-3 p-3 rounded-lg border">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="text-xs">
+                          {counselor.full_name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{counselor.full_name}</p>
+                        <p className="text-xs text-muted-foreground">{counselor.speciality || 'General Counseling'}</p>
+                      </div>
+                      <Badge variant={counselor.is_active ? "default" : "secondary"} className="text-xs">
+                        {counselor.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+                {counselors.length > 4 && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    And {counselors.length - 4} more counselors...
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">
+                <Users className="h-8 w-8 mx-auto mb-2" />
+                <p>No counselors added yet</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

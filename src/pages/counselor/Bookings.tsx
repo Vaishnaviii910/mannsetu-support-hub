@@ -1,399 +1,227 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Calendar as CalendarIcon, 
-  Clock, 
-  User, 
-  CheckCircle,
-  XCircle,
-  MessageCircle,
-  Phone,
-  Video,
-  MapPin,
-  AlertTriangle,
-  Users,
-  FileText
-} from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Calendar as CalendarIcon, CheckCircle, XCircle, MessageSquare, BarChart3, Settings, BookOpen, Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { useCounselorData } from "@/hooks/useCounselorData";
 import { useToast } from "@/hooks/use-toast";
-import { RejectBookingDialog } from "@/components/ui/dialog-reject";
 
 const Bookings = () => {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
+  
   const { toast } = useToast();
+  const { bookings, todaySessions, pendingRequests, loading, updateBookingStatus } = useCounselorData();
+
+  const handleApproveRequest = async (bookingId: string) => {
+    const { error } = await updateBookingStatus(bookingId, 'confirmed');
+    if (!error) {
+      toast({
+        title: "Booking Approved",
+        description: "Session confirmed and student notified.",
+      });
+    }
+  };
+
+  const handleRejectRequest = async (bookingId: string, reason: string) => {
+    if (!reason.trim()) {
+      toast({
+        title: "Rejection Reason Required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error } = await updateBookingStatus(bookingId, 'rejected', reason);
+    if (!error) {
+      toast({
+        title: "Booking Rejected",
+        description: "Student has been notified.",
+      });
+      setRejectionReason("");
+      setSelectedBookingId(null);
+    }
+  };
 
   const sidebarItems = [
-    { title: "Dashboard", url: "/counselor-dashboard", icon: CalendarIcon },
-    { title: "Bookings", url: "/counselor/bookings", icon: Clock, isActive: true },
-    { title: "Session Records", url: "/counselor/records", icon: FileText },
+    { title: "Dashboard", url: "/counselor-dashboard", icon: BarChart3 },
+    { title: "Bookings", url: "/counselor/bookings", icon: CalendarIcon, isActive: true },
+    { title: "Student Records", url: "/counselor/records", icon: BookOpen },
+    { title: "Settings", url: "/counselor/settings", icon: Settings },
   ];
-
-  const pendingRequests = [
-    {
-      id: 1,
-      studentId: "2024001",
-      studentName: "Anonymous Student",
-      requestTime: "2 hours ago",
-      urgency: "high",
-      sessionType: "Crisis Support",
-      preferredDate: "Today",
-      preferredTime: "Any available slot",
-      description: "Experiencing severe anxiety about upcoming exams. Need immediate support.",
-      format: "video"
-    },
-    {
-      id: 2,
-      studentId: "2024015",
-      studentName: "Anonymous Student",
-      requestTime: "5 hours ago", 
-      urgency: "medium",
-      sessionType: "Follow-up",
-      preferredDate: "Tomorrow",
-      preferredTime: "Morning (10-12 AM)",
-      description: "Follow-up session to discuss progress with stress management techniques.",
-      format: "in-person"
-    },
-    {
-      id: 3,
-      studentId: "2024032",
-      studentName: "Anonymous Student",
-      requestTime: "1 day ago",
-      urgency: "low",
-      sessionType: "Initial Assessment",
-      preferredDate: "This week",
-      preferredTime: "Afternoon preferred",
-      description: "First-time counseling request. Looking for general mental health support.",
-      format: "video"
-    }
-  ];
-
-  const upcomingAppointments = [
-    {
-      id: 1,
-      time: "10:00 AM - 11:00 AM",
-      studentId: "2024008",
-      type: "Individual Session",
-      format: "Video Call",
-      status: "confirmed",
-      notes: "Regular check-in, progress with anxiety management"
-    },
-    {
-      id: 2,
-      time: "2:00 PM - 3:00 PM",
-      studentId: "2024012",
-      type: "Crisis Support",
-      format: "In-Person",
-      status: "priority",
-      notes: "High priority - academic stress and panic attacks"
-    },
-    {
-      id: 3,
-      time: "4:00 PM - 5:00 PM",
-      studentId: "2024025",
-      type: "Follow-up",
-      format: "Video Call",
-      status: "confirmed",
-      notes: "Review sleep hygiene plan and coping strategies"
-    }
-  ];
-
-  const handleApproveRequest = (requestId: number) => {
-    toast({
-      title: "Session Approved",
-      description: "The session has been scheduled and the student has been notified.",
-    });
-  };
-
-  const handleRejectRequest = (requestId: number, reason: string) => {
-    toast({
-      title: "Session Rejected",
-      description: `Request rejected. Reason: ${reason}`,
-      variant: "destructive"
-    });
-  };
 
   return (
     <DashboardLayout sidebarItems={sidebarItems} userType="counselor" userName="Dr. Sarah Wilson">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-success to-primary rounded-lg flex items-center justify-center">
-              <Clock className="h-5 w-5 text-white" />
-            </div>
-            Appointment Management
-          </h1>
-          <p className="text-muted-foreground">
-            Manage booking requests and view your appointment schedule
-          </p>
-        </div>
+        <h1 className="text-3xl font-bold">Booking Management</h1>
 
-        <Tabs defaultValue="requests" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="requests">Pending Requests (3)</TabsTrigger>
-            <TabsTrigger value="schedule">Today's Schedule</TabsTrigger>
-            <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+        <Tabs defaultValue="pending" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="pending">Pending Requests ({pendingRequests.length})</TabsTrigger>
+            <TabsTrigger value="today">Today's Schedule ({todaySessions.length})</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="requests" className="space-y-6">
-            <div className="grid lg:grid-cols-3 gap-6">
-              {/* Requests List */}
-              <div className="lg:col-span-2 space-y-4">
-                {pendingRequests.map((request) => (
-                  <Card key={request.id} className="border-l-4 border-l-warning">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2">
-                          <User className="h-5 w-5" />
-                          {request.studentName}
-                        </CardTitle>
-                        <div className="flex items-center gap-2">
-                          <Badge 
-                            variant={
-                              request.urgency === "high" ? "destructive" :
-                              request.urgency === "medium" ? "default" : "secondary"
-                            }
-                          >
-                            {request.urgency} priority
-                          </Badge>
-                          <Badge variant="outline">
-                            {request.format === "video" ? (
-                              <Video className="h-3 w-3 mr-1" />
-                            ) : (
-                              <MapPin className="h-3 w-3 mr-1" />
-                            )}
-                            {request.format}
-                          </Badge>
-                        </div>
-                      </div>
-                      <CardDescription>
-                        Requested {request.requestTime} • Student ID: {request.studentId}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid md:grid-cols-2 gap-4">
+          <TabsContent value="pending" className="space-y-4">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : pendingRequests.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <CheckCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Pending Requests</h3>
+                  <p className="text-muted-foreground">All requests have been processed.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              pendingRequests.map((request) => (
+                <Card key={request.id} className="border-l-4 border-l-warning">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center space-x-4">
+                        <Avatar>
+                          <AvatarFallback>
+                            {request.students?.full_name?.split(' ').map(n => n[0]).join('') || 'ST'}
+                          </AvatarFallback>
+                        </Avatar>
                         <div>
-                          <h4 className="font-medium text-sm mb-1">Session Type</h4>
-                          <p className="text-sm text-muted-foreground">{request.sessionType}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-sm mb-1">Preferred Timing</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {request.preferredDate} - {request.preferredTime}
-                          </p>
+                          <h3 className="font-semibold">{request.students?.full_name || 'Unknown Student'}</h3>
+                          <p className="text-sm text-muted-foreground">{request.students?.student_id || 'N/A'}</p>
+                          <Badge variant="secondary">{request.status}</Badge>
                         </div>
                       </div>
-                      
-                      <div>
-                        <h4 className="font-medium text-sm mb-1">Description</h4>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          {request.description}
-                        </p>
+                      <div className="text-right">
+                        <p className="text-sm font-medium">{new Date(request.booking_date).toLocaleDateString()}</p>
+                        <p className="text-sm text-muted-foreground">{request.start_time} - {request.end_time}</p>
                       </div>
+                    </div>
 
-                      <div className="flex gap-3 pt-2">
-                        <Button 
-                          onClick={() => handleApproveRequest(request.id)}
-                          className="flex-1"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Approve & Schedule
-                        </Button>
-                        <RejectBookingDialog onReject={(reason) => handleRejectRequest(request.id, reason)}>
-                          <Button variant="destructive">
-                            <XCircle className="h-4 w-4 mr-2" />
+                    {request.student_notes && (
+                      <div className="mb-4 p-3 bg-muted rounded-lg">
+                        <p className="text-sm font-medium mb-1">Student's Notes:</p>
+                        <p className="text-sm text-muted-foreground">{request.student_notes}</p>
+                      </div>
+                    )}
+
+                    <div className="flex gap-3">
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleApproveRequest(request.id)}
+                        className="flex items-center gap-2"
+                      >
+                        <CheckCircle className="h-4 w-4" />
+                        Approve
+                      </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={() => setSelectedBookingId(request.id)}
+                            className="flex items-center gap-2"
+                          >
+                            <XCircle className="h-4 w-4" />
                             Reject
                           </Button>
-                        </RejectBookingDialog>
-                        <Button variant="outline" size="sm">
-                          <MessageCircle className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              {/* Quick Actions Sidebar */}
-              <div className="space-y-6">
-                <Card className="border-destructive/20 bg-destructive-foreground">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-destructive text-sm">
-                      <AlertTriangle className="h-4 w-4" />
-                      High Priority Requests
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      1 crisis support request requires immediate attention
-                    </p>
-                    <Button variant="destructive" size="sm" className="w-full">
-                      Review Crisis Request
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm">Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      <CalendarIcon className="h-4 w-4 mr-2" />
-                      Block Time Slot
-                    </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      <Phone className="h-4 w-4 mr-2" />
-                      Emergency Session
-                    </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
-                      <MessageCircle className="h-4 w-4 mr-2" />
-                      Send Message
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm">Today's Overview</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="text-center space-y-2">
-                      <div className="text-2xl font-bold text-primary">6</div>
-                      <p className="text-xs text-muted-foreground">Total Sessions</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-center">
-                      <div className="p-2 rounded bg-muted">
-                        <div className="text-sm font-medium">4</div>
-                        <div className="text-xs text-muted-foreground">Confirmed</div>
-                      </div>
-                      <div className="p-2 rounded bg-warning-soft">
-                        <div className="text-sm font-medium">2</div>
-                        <div className="text-xs text-muted-foreground">Pending</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="schedule" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CalendarIcon className="h-5 w-5" />
-                  Today's Schedule - {new Date().toLocaleDateString()}
-                </CardTitle>
-                <CardDescription>
-                  Your confirmed appointments and available time slots
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {upcomingAppointments.map((appointment) => (
-                  <div key={appointment.id} className="p-4 rounded-lg border">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-3">
-                        <div className="text-sm font-medium min-w-[140px]">
-                          {appointment.time}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold">Student #{appointment.studentId}</h3>
-                          <p className="text-sm text-muted-foreground">{appointment.type}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge 
-                          variant={appointment.status === "priority" ? "destructive" : "default"}
-                        >
-                          {appointment.status}
-                        </Badge>
-                        <Badge variant="outline">
-                          {appointment.format === "Video Call" ? (
-                            <Video className="h-3 w-3 mr-1" />
-                          ) : (
-                            <MapPin className="h-3 w-3 mr-1" />
-                          )}
-                          {appointment.format}
-                        </Badge>
-                      </div>
-                    </div>
-                    {appointment.notes && (
-                      <p className="text-sm text-muted-foreground pl-[140px]">
-                        Notes: {appointment.notes}
-                      </p>
-                    )}
-                    <div className="flex gap-2 mt-3 pl-[140px]">
-                      <Button size="sm">
-                        {appointment.format === "Video Call" ? (
-                          <Video className="h-4 w-4 mr-2" />
-                        ) : (
-                          <MapPin className="h-4 w-4 mr-2" />
-                        )}
-                        Start Session
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <MessageCircle className="h-4 w-4 mr-2" />
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Reject Booking Request</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="rejection-reason">Reason for rejection</Label>
+                              <Textarea
+                                id="rejection-reason"
+                                value={rejectionReason}
+                                onChange={(e) => setRejectionReason(e.target.value)}
+                                placeholder="Please provide a reason..."
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="outline" 
+                                onClick={() => {
+                                  setRejectionReason("");
+                                  setSelectedBookingId(null);
+                                }}
+                                className="flex-1"
+                              >
+                                Cancel
+                              </Button>
+                              <Button 
+                                variant="destructive" 
+                                onClick={() => selectedBookingId && handleRejectRequest(selectedBookingId, rejectionReason)}
+                                className="flex-1"
+                              >
+                                Reject Booking
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      <Button variant="outline" size="sm" className="flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4" />
                         Message
                       </Button>
                     </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="calendar" className="space-y-6">
-            <div className="grid lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-1">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Select Date</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={setSelectedDate}
-                      className="rounded-md border-0"
-                    />
                   </CardContent>
                 </Card>
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="today" className="space-y-4">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
               </div>
-              
-              <div className="lg:col-span-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>
-                      Schedule for {selectedDate?.toLocaleDateString()}
-                    </CardTitle>
-                    <CardDescription>
-                      Time slots and appointments for the selected date
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {/* Time slots would be dynamically generated based on selected date */}
-                      <div className="grid grid-cols-4 gap-2">
-                        {["09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00"].map((time) => (
-                          <div 
-                            key={time}
-                            className="p-3 rounded border text-center hover:bg-muted cursor-pointer"
-                          >
-                            <div className="text-sm font-medium">{time}</div>
-                            <div className="text-xs text-muted-foreground">Available</div>
-                          </div>
-                        ))}
+            ) : todaySessions.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <CalendarIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Sessions Today</h3>
+                  <p className="text-muted-foreground">You have no scheduled sessions.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              todaySessions.map((session) => (
+                <Card key={session.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center space-x-4">
+                        <Avatar>
+                          <AvatarFallback>
+                            {session.students?.full_name?.split(' ').map(n => n[0]).join('') || 'ST'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h3 className="font-semibold">{session.students?.full_name || 'Unknown Student'}</h3>
+                          <p className="text-sm text-muted-foreground">{session.students?.student_id || 'N/A'}</p>
+                          <Badge variant="default">{session.status}</Badge>
+                        </div>
                       </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium">{session.start_time} - {session.end_time}</p>
+                        <p className="text-sm text-muted-foreground">{new Date(session.booking_date).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Button size="sm">Start Session</Button>
+                      <Button variant="outline" size="sm">View Profile</Button>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </div>
+              ))
+            )}
           </TabsContent>
         </Tabs>
       </div>

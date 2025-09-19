@@ -1,352 +1,211 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { 
-  Calendar as CalendarIcon, 
-  Clock, 
-  User, 
-  Heart, 
-  MessageCircle, 
-  Users,
-  Brain,
-  CheckCircle,
-  Star,
-  Video,
-  MapPin
-} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Calendar } from "@/components/ui/calendar";
+import { Calendar as CalendarIcon, MessageSquare, Users, BarChart3, Settings, Heart, BookOpen, Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useToast } from "@/hooks/use-toast";
+import { useBookingSystem } from "@/hooks/useBookingSystem";
 
 const BookSession = () => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedCounselor, setSelectedCounselor] = useState("");
   const [sessionType, setSessionType] = useState("");
-  const [urgency, setUrgency] = useState("");
   const [description, setDescription] = useState("");
   
   const { toast } = useToast();
+  const { counselors, availableSlots, loading, getCounselorsForStudent, getAvailableSlots, createBooking } = useBookingSystem();
 
-  const sidebarItems = [
-    { title: "Dashboard", url: "/student-dashboard", icon: Heart },
-    { title: "AI Chatbot", url: "/student/chatbot", icon: MessageCircle },
-    { title: "Book Session", url: "/student/book-session", icon: CalendarIcon, isActive: true },
-    { title: "Peer Support", url: "/student/peer-support", icon: Users },
-    { title: "Resources Hub", url: "/student/resources", icon: Brain },
-  ];
+  useEffect(() => {
+    getCounselorsForStudent();
+  }, []);
 
-  const counselors = [
-    {
-      id: "1",
-      name: "Dr. Sarah Wilson",
-      specialization: "Anxiety & Depression",
-      rating: 4.9,
-      experience: "8 years",
-      availability: "Available",
-      nextSlot: "Today 2:00 PM"
-    },
-    {
-      id: "2", 
-      name: "Dr. Michael Chen",
-      specialization: "Academic Stress & ADHD",
-      rating: 4.8,
-      experience: "6 years",
-      availability: "Available", 
-      nextSlot: "Tomorrow 10:00 AM"
-    },
-    {
-      id: "3",
-      name: "Dr. Priya Sharma", 
-      specialization: "Relationship & Social Issues",
-      rating: 4.9,
-      experience: "10 years",
-      availability: "Busy",
-      nextSlot: "Monday 3:00 PM"
-    },
-    {
-      id: "4",
-      name: "Dr. James Rodriguez",
-      specialization: "Crisis Intervention",
-      rating: 5.0,
-      experience: "12 years", 
-      availability: "Available",
-      nextSlot: "Today 4:00 PM"
+  useEffect(() => {
+    if (selectedCounselor && selectedDate) {
+      const dateString = selectedDate.toISOString().split('T')[0];
+      getAvailableSlots(selectedCounselor, dateString);
     }
-  ];
+  }, [selectedCounselor, selectedDate]);
 
-  const timeSlots = [
-    "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
-    "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"
-  ];
-
-  const handleBooking = () => {
-    if (!selectedDate || !selectedTime || !selectedCounselor || !sessionType || !urgency) {
+  const handleBooking = async () => {
+    if (!selectedDate || !selectedTime || !selectedCounselor || !sessionType) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields to book your session.",
-        variant: "destructive"
+        description: "Please fill in all required fields.",
+        variant: "destructive",
       });
       return;
     }
 
-    toast({
-      title: "Session Booked Successfully!",
-      description: `Your appointment has been scheduled for ${selectedDate.toLocaleDateString()} at ${selectedTime}.`,
-    });
+    const selectedSlot = availableSlots.find(slot => 
+      `${slot.start_time}-${slot.end_time}` === selectedTime
+    );
 
-    // Reset form
-    setSelectedTime("");
-    setSelectedCounselor("");
-    setSessionType("");
-    setUrgency("");
-    setDescription("");
+    if (selectedSlot) {
+      const bookingDate = selectedDate.toISOString().split('T')[0];
+      const { error } = await createBooking(
+        selectedCounselor,
+        selectedSlot.id,
+        bookingDate,
+        selectedSlot.start_time,
+        selectedSlot.end_time,
+        description
+      );
+
+      if (!error) {
+        toast({
+          title: "Session Booked Successfully!",
+          description: "Your session has been scheduled for counselor approval.",
+        });
+        // Reset form
+        setSelectedDate(undefined);
+        setSelectedTime("");
+        setSelectedCounselor("");
+        setSessionType("");
+        setDescription("");
+      }
+    }
   };
 
+  const sidebarItems = [
+    { title: "Dashboard", url: "/student-dashboard", icon: BarChart3 },
+    { title: "Book Session", url: "/student/book-session", icon: CalendarIcon, isActive: true },
+    { title: "Mental Health Checkup", url: "/student/mental-health-checkup", icon: Heart },
+    { title: "Peer Support", url: "/student/peer-support", icon: Users },
+    { title: "Resources Hub", url: "/student/resources", icon: BookOpen },
+    { title: "AI Chatbot", url: "/student/chatbot", icon: MessageSquare },
+    { title: "Settings", url: "/student/settings", icon: Settings },
+  ];
+
   return (
-    <DashboardLayout sidebarItems={sidebarItems} userType="student" userName="Alex Johnson">
+    <DashboardLayout sidebarItems={sidebarItems} userType="student" userName="Student">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-success to-primary rounded-lg flex items-center justify-center">
-              <CalendarIcon className="h-5 w-5 text-white" />
-            </div>
-            Book Counseling Session
-          </h1>
-          <p className="text-muted-foreground">
-            Schedule a confidential session with our qualified mental health professionals
-          </p>
-        </div>
+        <h1 className="text-3xl font-bold">Book Counseling Session</h1>
+        
+        <div className="grid lg:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Session Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Select value={sessionType} onValueChange={setSessionType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose session type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="individual">Individual Counseling</SelectItem>
+                    <SelectItem value="crisis">Crisis Intervention</SelectItem>
+                    <SelectItem value="academic">Academic Support</SelectItem>
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Booking Form */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Session Details
-              </CardTitle>
-              <CardDescription>
-                Fill in the details to book your counseling session
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Session Type & Urgency */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sessionType">Session Type *</Label>
-                  <Select value={sessionType} onValueChange={setSessionType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select session type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="individual">Individual Counseling</SelectItem>
-                      <SelectItem value="group">Group Therapy</SelectItem>
-                      <SelectItem value="assessment">Initial Assessment</SelectItem>
-                      <SelectItem value="followup">Follow-up Session</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="urgency">Urgency Level *</Label>
-                  <Select value={urgency} onValueChange={setUrgency}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select urgency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Regular (Within a week)</SelectItem>
-                      <SelectItem value="medium">Moderate (Within 2-3 days)</SelectItem>
-                      <SelectItem value="high">Urgent (Same day)</SelectItem>
-                      <SelectItem value="emergency">Emergency (Immediate)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Counselor Selection */}
-              <div className="space-y-4">
-                <Label>Select Counselor *</Label>
-                <div className="grid gap-3">
-                  {counselors.map((counselor) => (
-                    <div
+            <Card>
+              <CardHeader>
+                <CardTitle>Select Counselor</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : counselors.length === 0 ? (
+                  <p className="text-muted-foreground">No counselors available</p>
+                ) : (
+                  counselors.map((counselor) => (
+                    <Card 
                       key={counselor.id}
-                      className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                        selectedCounselor === counselor.id
-                          ? "border-primary bg-primary-soft"
-                          : "border-border hover:border-primary/50"
-                      }`}
+                      className={`cursor-pointer ${selectedCounselor === counselor.id ? 'ring-2 ring-primary' : ''}`}
                       onClick={() => setSelectedCounselor(counselor.id)}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center">
-                            <User className="h-6 w-6 text-white" />
-                          </div>
+                      <CardContent className="p-4">
+                        <div className="flex items-center space-x-4">
+                          <Avatar>
+                            <AvatarFallback>{counselor.full_name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                          </Avatar>
                           <div>
-                            <h3 className="font-semibold">{counselor.name}</h3>
-                            <p className="text-sm text-muted-foreground">{counselor.specialization}</p>
-                            <div className="flex items-center gap-4 mt-1">
-                              <div className="flex items-center gap-1">
-                                <Star className="h-3 w-3 fill-warning text-warning" />
-                                <span className="text-xs">{counselor.rating}</span>
-                              </div>
-                              <span className="text-xs text-muted-foreground">{counselor.experience}</span>
-                            </div>
+                            <h4 className="font-semibold">{counselor.full_name}</h4>
+                            <p className="text-sm text-muted-foreground">{counselor.speciality || 'General Counseling'}</p>
+                            <Badge variant={counselor.is_active ? "default" : "secondary"}>
+                              {counselor.is_active ? "Available" : "Unavailable"}
+                            </Badge>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <Badge 
-                            variant={counselor.availability === "Available" ? "default" : "secondary"}
-                          >
-                            {counselor.availability}
-                          </Badge>
-                          <p className="text-xs text-muted-foreground mt-1">{counselor.nextSlot}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </CardContent>
+            </Card>
 
-              {/* Date & Time Selection */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label>Select Date *</Label>
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    disabled={(date) => date < new Date() || date.getDay() === 0}
-                    className="rounded-md border"
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="timeSlot">Available Time Slots *</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {timeSlots.map((time) => (
-                        <Button
-                          key={time}
-                          variant={selectedTime === time ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setSelectedTime(time)}
-                          className="justify-start"
-                        >
-                          <Clock className="h-3 w-3 mr-2" />
-                          {time}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Session Format</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button variant="outline" size="sm" className="justify-start">
-                        <Video className="h-3 w-3 mr-2" />
-                        Video Call
-                      </Button>
-                      <Button variant="outline" size="sm" className="justify-start">
-                        <MapPin className="h-3 w-3 mr-2" />
-                        In-Person
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <Label htmlFor="description">What would you like to discuss? (Optional)</Label>
+            <Card>
+              <CardHeader>
+                <CardTitle>Additional Notes</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <Textarea
-                  id="description"
+                  placeholder="Describe what you'd like to discuss..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Briefly describe what you'd like to talk about in your session..."
-                  className="min-h-[100px]"
                 />
-              </div>
+              </CardContent>
+            </Card>
 
-              {/* Book Button */}
-              <Button onClick={handleBooking} className="w-full" size="lg">
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Book Session
-              </Button>
-            </CardContent>
-          </Card>
+            <Button onClick={handleBooking} className="w-full" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Book Session
+            </Button>
+          </div>
 
-          {/* Quick Info & Emergency */}
           <div className="space-y-6">
-            {/* Emergency Support */}
-            <Card className="border-destructive/20 bg-destructive-foreground">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-destructive text-sm flex items-center gap-2">
-                  <Heart className="h-4 w-4" />
-                  Crisis Support
-                </CardTitle>
+                <CardTitle>Select Date</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  If you're in immediate crisis or having thoughts of self-harm:
-                </p>
-                <Button variant="destructive" size="sm" className="w-full">
-                  Emergency Helpline
-                </Button>
-                <Button variant="outline" size="sm" className="w-full">
-                  Campus Security
-                </Button>
+              <CardContent>
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  disabled={(date) => date < new Date()}
+                  className="rounded-md border"
+                />
               </CardContent>
             </Card>
 
-            {/* Booking Guidelines */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Booking Guidelines</CardTitle>
+                <CardTitle>Available Times</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm space-y-3">
-                <div className="space-y-2">
-                  <h4 className="font-medium">Before your session:</h4>
-                  <ul className="text-muted-foreground space-y-1 ml-4">
-                    <li>• Arrive 5 minutes early</li>
-                    <li>• Prepare any questions</li>
-                    <li>• Ensure privacy for video calls</li>
-                  </ul>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-medium">Cancellation Policy:</h4>
-                  <p className="text-muted-foreground">
-                    Cancel at least 2 hours before your scheduled session.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Upcoming Sessions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Upcoming Sessions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="p-3 rounded-lg border">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium text-sm">Dr. Sarah Wilson</p>
-                      <p className="text-xs text-muted-foreground">Individual Session</p>
-                      <p className="text-xs text-primary">Tomorrow, 2:00 PM</p>
-                    </div>
-                    <Badge variant="secondary">Confirmed</Badge>
+              <CardContent>
+                {!selectedCounselor || !selectedDate ? (
+                  <p className="text-muted-foreground">Select counselor and date first</p>
+                ) : availableSlots.length === 0 ? (
+                  <p className="text-muted-foreground">No available slots</p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    {availableSlots.map((slot) => {
+                      const timeString = `${slot.start_time}-${slot.end_time}`;
+                      return (
+                        <Button
+                          key={slot.id}
+                          variant={selectedTime === timeString ? "default" : "outline"}
+                          onClick={() => setSelectedTime(timeString)}
+                          size="sm"
+                        >
+                          {slot.start_time.substring(0, 5)}
+                        </Button>
+                      );
+                    })}
                   </div>
-                </div>
-                <Button variant="outline" size="sm" className="w-full">
-                  View All Sessions
-                </Button>
+                )}
               </CardContent>
             </Card>
           </div>
